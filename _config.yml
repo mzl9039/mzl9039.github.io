@@ -1,90 +1,116 @@
 # Site settings
 title: mzl9039
-SEOTitle: 莫致良的个人博客 | mzl9039 Blog
-header-img: img/home-bg.jpg
+SEOTitle: mzl9039's Blog
+header-img: styles/img/home-bg.jpg
 email: mzl9039@163.com
 description: "生活和学习，现实与梦想，真实与想象 | mzl9039，好奇地看着这个世界，everything is on the way | 这里是 @mzl9039 的个人博客，享受生活，享受学习，想用技术让生活更有趣一些。"
 keyword: "mzl, mzl9039, 莫致良, @mzl9039, mzl9039 Blog, 博客, 个人网站, 小鱼, 空气中的鱼"
-url: "https://mzl9039.github.io"              # your host, for absolute URL
-baseurl: ""                             # for example, '/blog' if your blog hosted on 'host/blog'
+url: "https://mzl9039.github.io"              	# your host, for absolute URL
+baseurl: ""                                  	# for example, '/blog' if your blog hosted on 'host/blog'
 
+# Where things are
+source: .		# 当前目录
+exclude: []
+destination:  ./_site
+plugins_dir:  _plugins
+layouts_dir:  _layouts
+data_dir:     _data
+includes_dir: _includes
+styles_dir:   styles
+collections:
+  posts:
+    output:   true
 
+# Handling Reading
+safe:         false
+include:      [".htaccess"]
+exclude:      ["node_modules", "vendor/bundle/", "vendor/cache/", "vendor/gems/", "vendor/ruby/", "less", "Gruntfile.js","package.json","README.md","README.zh.md"]
+keep_files:   [".git", ".svn"]
+encoding:     "utf-8"
+markdown_ext: "markdown,mkdown,mkdn,mkd,md"
+
+# Filtering Content
+show_drafts: null
+limit_posts: 0
+future:      false
+unpublished: false
+
+# Plugins
+# from PR#40, to support local preview for Jekyll 3.0
+whitelist: []
+gems:      [jekyll-paginate]
+
+# Conversion
+markdown:    kramdown
+highlighter: rouge
+lsi:         false
+excerpt_separator: "\n\n"
+incremental: false
+
+# Serving
+detach:  false
+port:    4000
+host:    127.0.0.1
+baseurl: "" # does not include hostname
+show_dir_listing: false
+
+# Outputting
+permalink:     date
+paginate_path: /page:num
+timezone:      null
+paginate: 10
+anchorjs: true   				# if you want to customize anchor. check out line:181 of `post.html`
+
+quiet:    false
+verbose:  false
+defaults: []
+
+liquid:
+  error_mode: warn
+
+# Markdown Processors
+rdiscount:
+  extensions: []
+
+redcarpet:
+  extensions: []
+
+markdown: kramdown
+kramdown:
+  auto_ids:       true
+  entity_output:  as_char
+  toc_levels:     1..6
+  smart_quotes:   lsquo,rsquo,ldquo,rdquo
+  input:          GFM
+  hard_wrap:      false
+  footnote_nr:    1
 
 # SNS settings
 RSS: false
-weibo_username:     莫致良
-zhihu_username:     莫致良
+weibo_username:     mzl9039
+zhihu_username:     mo-zhi-liang
 github_username:    mzl9039
-#twitter_username:  huxpro
 facebook_username:  mzl9039
-# linkedin_username:  firstname-lastname-idxxxx
-
-
-
-# Build settings
-# from 2016, 'pygments' is unsupported on GitHub Pages. Use 'rouge' for highlighting instead.
-highlighter: rouge
-permalink: pretty
-paginate: 10
-exclude: ["less","node_modules","Gruntfile.js","package.json","README.md","README.zh.md"]
-anchorjs: true                          # if you want to customize anchor. check out line:181 of `post.html`
-
-
-
-# Gems
-# from PR#40, to support local preview for Jekyll 3.0
-gems: [jekyll-paginate]
-
-
-
-# Markdown settings
-# replace redcarpet to kramdown,
-# although redcarpet can auto highlight code, the lack of header-id make the catalog impossible, so I switch to kramdown
-# document: http://jekyllrb.com/docs/configuration/#kramdown
-markdown: kramdown
-kramdown:
-  input: GFM                            # use Github Flavored Markdown !important
-
-
 
 # Disqus settings
 #disqus_username: _your_disqus_short_name_
-
-# Duoshuo settings
-# duoshuo_username: huxblog
-# Share component is depend on Comment so we can NOT use share only.
-# duoshuo_share: false # set to false if you want to use Comment without Sharing
-
-
-
-
-# Analytics settings
-# Baidu Analytics 
-# ba_track_id: [your track id]
 
 # Google Analytics
 ga_track_id: 'UA-92396615-1'            # Format: UA-xxxxxx-xx
 ga_domain: https://mzl9039.github.io
 
-
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
 sidebar-about-description: "看看生活，学学数据，<br>新的路上，一切都将开始"
-sidebar-avatar: /img/avatar-hux.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
-
-
+sidebar-avatar: /styles/img/avatar-hux.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 # Featured Tags
 featured-tags: true                     # whether or not using Feature-Tags
 featured-condition-size: 1              # A tag will be featured if the size of it is more than this condition value
 
-
-
 # Progressive Web Apps
 chrome-tab-theme-color: "#000000"
 service-worker: true
-
-
 
 # Friends，现在还没有朋友，这里只是一个例子
 friends: [

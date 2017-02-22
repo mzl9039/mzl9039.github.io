@@ -10,38 +10,28 @@
     <meta name="keywords"  content="mzl, mzl9039, 莫致良, @mzl9039, mzl9039 Blog, 博客, 个人网站, 小鱼, 空气中的鱼">
     <meta name="theme-color" content="#000000">
     
-    <title>莫致良的个人博客 | mzl9039 Blog</title>
+    <title>mzl9039's Blog</title>
 
     <!-- Web App Manifest -->
     <link rel="manifest" href="/pwa/manifest.json">
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="shortcut icon" href="/styles/img/favicon.ico">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="http://localhost:4000/404.html">
 
     <!-- Bootstrap Core CSS -->
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles/css/bootstrap.min.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/hux-blog.min.css">
+    <link rel="stylesheet" href="/styles/css/hux-blog.min.css">
 
     <!-- Pygments Github CSS -->
-    <link rel="stylesheet" href="/css/syntax.css">
+    <link rel="stylesheet" href="/styles/css/syntax.css">
 
-    <!-- Custom Fonts -->
-    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
     <!-- Hux change font-awesome CDN to qiniu -->
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-
-
-    <!-- Hux Delete, sad but pending in China
-    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
-    css'>
-    -->
-
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -81,7 +71,7 @@
                     </li>
                     
                     <li>
-                        <a href="/about/">About</a>
+                        <a href="/about.html">About</a>
                     </li>
                     
                     <li>
@@ -89,7 +79,7 @@
                     </li>
                     
                     <li>
-                        <a href="/tags/">Tags</a>
+                        <a href="/tags.html">Tags</a>
                     </li>
                     
                 </ul>
@@ -154,7 +144,7 @@
 
 
     <!-- Page Header -->
-<header class="intro-header" style="background-image: url('/img/404-bg.jpg')">
+<header class="intro-header" style="background-image: url('/styles/img/404-bg.jpg')">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
@@ -184,7 +174,7 @@
                     <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
                     
                     <li>
-                        <a target="_blank" href="https://www.zhihu.com/people/莫致良">
+                        <a target="_blank" href="https://www.zhihu.com/people/mo-zhi-liang">
                             <span class="fa-stack fa-lg">
                                 <i class="fa fa-circle fa-stack-2x"></i>
                                 <i class="fa  fa-stack-1x fa-inverse">知</i>
@@ -194,7 +184,7 @@
                     
                     
                     <li>
-                        <a target="_blank" href="http://weibo.com/莫致良">
+                        <a target="_blank" href="http://weibo.com/mzl9039">
                             <span class="fa-stack fa-lg">
                                 <i class="fa fa-circle fa-stack-2x"></i>
                                 <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
@@ -242,13 +232,13 @@
 </footer>
 
 <!-- jQuery -->
-<script src="/js/jquery.min.js "></script>
+<script src="/styles/js/jquery.min.js "></script>
 
 <!-- Bootstrap Core JavaScript -->
-<script src="/js/bootstrap.min.js "></script>
+<script src="/styles/js/bootstrap.min.js "></script>
 
 <!-- Custom Theme JavaScript -->
-<script src="/js/hux-blog.min.js "></script>
+<script src="/styles/js/hux-blog.min.js "></script>
 
 <!-- Service Worker -->
 
@@ -263,7 +253,6 @@
 </script>
 
 
-
 <!-- async load function -->
 <script>
     function async(u, c) {
@@ -276,31 +265,11 @@
     }
 </script>
 
-<!-- 
-     Because of the native support for backtick-style fenced code blocks 
-     right within the Markdown is landed in Github Pages, 
-     From V1.6, There is no need for Highlight.js, 
-     so Huxblog drops it officially.
-
-     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
-     - https://help.github.com/articles/creating-and-highlighting-code-blocks/ 
-     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers   
--->
-<!--
-    <script>
-        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
-            hljs.initHighlightingOnLoad();
-        })
-    </script>
-    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
--->
-
-
 <!-- jquery.tagcloud.js -->
 <script>
     // only load tagcloud.js in tag.html
     if($('#tag_cloud').length !== 0){
-        async('/js/jquery.tagcloud.js',function(){
+        async('/styles/js/jquery.tagcloud.js',function(){
             $.fn.tagcloud.defaults = {
                 //size: {start: 1, end: 1, unit: 'em'},
                 color: {start: '#bbbbee', end: '#0085a1'},
@@ -350,7 +319,7 @@
 
 
 <!-- Image to hack wechat -->
-<img src="/img/icon_wechat.png" width="0" height="0" />
+<img src="/styles/img/icon_wechat.png" width="0" height="0" />
 <!-- Migrate from head to bottom, no longer block render and still work -->
 
 </body>

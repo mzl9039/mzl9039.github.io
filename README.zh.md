@@ -1,8 +1,12 @@
-# Hux blog 模板
+# mzl9039 blog 模板
 
-### [我的博客在这里 &rarr;](http://huxpro.github.io)
+### [我的博客在这里 &rarr;](https://mzl9039.github.io)
 
+### fork from https://huxpro.github.io v1.7.0
 
+### 我的README部分
+
+### 原作者的READMD部分
 ### 关于收到"Page Build Warning"的email
 
 由于jekyll升级到3.0.x,对原来的pygments代码高亮不再支持，现只支持一种-rouge，所以你需要在 `_config.yml`文件中修改`highlighter: rouge`.另外还需要在`_config.yml`文件中加上`gems: [jekyll-paginate]`.

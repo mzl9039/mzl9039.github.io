@@ -1,11 +1,14 @@
-#Hux Blog
+#mzl9039 Blog
 
-###[View Live Hux Blog &rarr;](https://huangxuan.me)
+###[View Live mzl9039 Blog &rarr;](https://mzl9039.github.io)
 
-![](http://huangxuan.me/img/blog-desktop.jpg)
+![](http://mzl9039.github.io/styles/img/blog-desktop.jpg)
 
+### mzl9039's README.md
 
+### frok from https://huxpro.github.io v1.7.0
 
+### Huxpro's README.md
 ## Boilerplate (beta)
 
 Want to clone a boilerplate instead of my buzz blog? Here comes this!  

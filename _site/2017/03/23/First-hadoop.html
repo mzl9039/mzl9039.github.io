@@ -10,7 +10,7 @@
     <meta name="keywords"  content="mzl, mzl9039, 莫致良, @mzl9039, mzl9039 Blog, 博客, 个人网站, 小鱼, 空气中的鱼">
     <meta name="theme-color" content="#000000">
     
-    <title>mzl9039's Blog</title>
+    <title>First Hadoop - mzl9039's Blog</title>
 
     <!-- Web App Manifest -->
     <link rel="manifest" href="/pwa/manifest.json">
@@ -19,7 +19,7 @@
     <link rel="shortcut icon" href="/styles/img/favicon.ico">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="http://localhost:4000/">
+    <link rel="canonical" href="http://localhost:4000/2017/03/23/First-hadoop.html">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/styles/css/bootstrap.min.css">
@@ -143,189 +143,252 @@
 </script>
 
 
-    <!-- Page Header -->
-<header class="intro-header" style="background-image: url('/styles/img/home-bg.jpg')">
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/styles/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/styles/img/home-bg.jpg')
+    }
+
+    
+</style>
+<header class="intro-header" >
+    <div class="header-mask"></div>
     <div class="container">
         <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
-                <div class="site-heading">
-                    <h1>mzl9039</h1>
-                    <!--<hr class="small">-->
-                    <span class="subheading">已无岁月可回头</span>
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#hadoop" title="hadoop">hadoop</a>
+                        
+                        <a class="tag" href="/tags/#learn" title="learn">learn</a>
+                        
+                        <a class="tag" href="/tags/#first" title="first">first</a>
+                        
+                        <a class="tag" href="/tags/#big data" title="big data">big data</a>
+                        
+                    </div>
+                    <h1>First Hadoop</h1>
+                    
+                    
+                    <h2 class="subheading">Hadoop 测试</h2>
+                    
+                    <span class="meta">Posted by mzl on March 23, 2017</span>
                 </div>
             </div>
         </div>
     </div>
 </header>
 
-<!-- Main Content -->
-<div class="container">
-	<div class="row">
-        
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
 
-<!-- USE SIDEBAR -->
-    <!-- PostList Container -->
-    		<div class="
-                col-lg-8 col-lg-offset-1
-                col-md-8 col-md-offset-1
-                col-sm-12
-                col-xs-12
-                postlist-container
-            ">
-    			
-<div class="post-preview">
-    <a href="/2017/03/23/First-hadoop.html">
-        <h2 class="post-title">
-            First Hadoop
-        </h2>
-        
-        <h3 class="post-subtitle">
-            Hadoop 测试
-        </h3>
-        
-        <div class="post-content-preview">
-            接触 Hadoop
-安装 Hadoop
-安装相关环境
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
 
-  根据 Hadoop 官网 要求，hadoop 安装需要 GNU/Linux 平台（Windows平台也支持，但步骤不在官网上）,
-  新版本的 Hadoop 需要 JDK8
-  shh 和 pdsh 需要安装
-  下载 Hadoop 并且解压安装
-  设置 Hadoop 目录下 etc/hadoop/hadoop-env.sh 里的...
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by mzl on March 23, 2017
-    </p>
+				<h1 id="接触-hadoop">接触 Hadoop</h1>
+<h2 id="安装-hadoop">安装 Hadoop</h2>
+<h3 id="安装相关环境">安装相关环境</h3>
+<ol>
+  <li>根据 <a href="http://hadoop.apache.org/">Hadoop 官网</a> 要求，hadoop 安装需要 GNU/Linux 平台（Windows平台也支持，但步骤不在官网上）,</li>
+  <li>新版本的 Hadoop 需要 JDK8</li>
+  <li>shh 和 pdsh 需要安装</li>
+  <li>下载 Hadoop 并且解压安装</li>
+  <li>设置 Hadoop 目录下 etc/hadoop/hadoop-env.sh 里的 JAVA_HOME 变量</li>
+  <li>测试命令 bin/hadoop ，若出现 hadoop 的使用文档，则 hadoop 初步安装完成。</li>
+</ol>
+
+<h3 id="启动-hadoop">启动 Hadoop</h3>
+<p>Hadoop 有三种模式：</p>
+<ul>
+  <li>Local Mode (standalone)</li>
+  <li>Pseudo-Distributed Mode</li>
+  <li>Fully-Distributed Mode
+Hadoop 被默认配置为以 <strong>非并行</strong> 的 Mode 运行，即以 Local Mode 运行。</li>
+</ul>
+
+<h4 id="三种模式运行">三种模式运行</h4>
+<h5 id="local-modestandalone">Local Mode(Standalone)</h5>
+<p>这种模式下，Hadoop 作为一个单独的 Java 进程运行，这样全球调试，测试代码为</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>cd $HADOOP_HOME
+mkdir input
+cp etc/hadoop/*.xml
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0-alpha2.jar grep input output 'dfs[a-z.]+'
+cat output/*
+</code></pre>
 </div>
-<hr>
 
-<div class="post-preview">
-    <a href="/2017/02/23/learn-javascript-1.html">
-        <h2 class="post-title">
-            学习javascript
-        </h2>
-        
-        <h3 class="post-subtitle">
-            Hello javascript
-        </h3>
-        
-        <div class="post-content-preview">
-            基础语法学习
-快速入门
+<h5 id="pseudo-distributed-mode">Pseudo-Distributed Mode</h5>
+<p>Hadoop 在 Pseudo-Dictionary 模式下，可以在单节点上运行，这里每个 hadoop deamon 都是一个分开的 java process
+首先使用如下配置</p>
 
-  在见面插入js的方法
-    
-      网页的任何地方，一般在&lt;head&gt;标签中，并用&lt;script&gt;&lt;/script&gt;括起来
-      代码放在以 js 后缀的文件中，用如下方式引用：
-         &lt;script src="/static/js/jsfile.js"&gt;&lt;/script&gt;
+<div class="highlighter-rouge"><pre class="highlight"><code>etc/hadoop/core.site.xml:
+&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;fs.defaultFS&lt;/name&gt;
+        &lt;value&gt;hdfs://localhost:9000&lt;/value&gt;
+    &lt;/property&gt;
+&lt;/configuration&gt;
 
-...
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by mzl on February 23, 2017
-    </p>
+etc/hadoop/hdfs-site.xml 
+&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;dfs.replication&lt;/name&gt;
+        &lt;value&gt;hdfs://localhost:9000&lt;/value&gt;
+    &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre>
 </div>
-<hr>
+
+<p>检查能否以 ssh 的方式连接：
+ssh localhost
+因为个人以前配置过，所以不会有问题。
+在 <strong>本地</strong> 运行 MapReduce 的 Job，下面是简单的步骤：</p>
+<ol>
+  <li>格式化 namenode: ```bin/hdfs namenode -format``</li>
+  <li>启动 namenode 镜像和 datanode 镜像：```sbin/start-dfs.sh``
+ 这里 hadoop 镜像的日志会写个 $HADOOP_LOG_DIR 目录，默认是 $HADOOP_HOME/logs</li>
+  <li>检查 Web 接口，默认地址为：```http://localhost:9870/``</li>
+  <li>使 HDFS 目录能执行 MapReduce Job:
+    <div class="highlighter-rouge"><pre class="highlight"><code> bin/hdfs dfs -mkdir /user
+ bin/hdfs dfs -mkdir /user/&lt;username&gt;
+</code></pre>
+    </div>
+  </li>
+  <li>把输入的文件拷贝到分布式文件系统中：
+    <div class="highlighter-rouge"><pre class="highlight"><code> bin/hdfs dfs -mkdir input
+ bin/hdfs dfs -put etc/hadoop/*.xml input
+</code></pre>
+    </div>
+  </li>
+  <li>运行程序：
+    <div class="highlighter-rouge"><pre class="highlight"><code> bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0-alpha2.jar grep input output 'dfs[a-z.]+'
+</code></pre>
+    </div>
+  </li>
+  <li>将输出文件从分布式文件系统拷贝到本地文件系统并检查：
+    <div class="highlighter-rouge"><pre class="highlight"><code> bin/hdfs dfs -get output output
+ cat output/*
+</code></pre>
+    </div>
+  </li>
+  <li>结束镜像运行：
+    <div class="highlighter-rouge"><pre class="highlight"><code> sbin/stop-dfs.sh
+</code></pre>
+    </div>
+  </li>
+</ol>
+
+<p>在Pseudo Distributed 模式下，在 <strong>Yarn</strong> 上运行 MapReduce Job：</p>
+
+<ol>
+  <li>配置如下：
+etc/hadoop/mapred-site.xml
+    <div class="highlighter-rouge"><pre class="highlight"><code> &lt;configuration&gt;
+     &lt;property&gt;
+         &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
+         &lt;value&gt;yarn&lt;/value&gt;
+     &lt;/property&gt;
+ &lt;/configuration&gt;
+</code></pre>
+    </div>
+    <p>etc/hadoop/yarn-site.xml</p>
+    <div class="highlighter-rouge"><pre class="highlight"><code> &lt;configuration&gt;
+     &lt;property&gt;
+         &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
+         &lt;value&gt;mapreduce-shuffle&lt;/value&gt;
+     &lt;/property&gt;
+     &lt;property&gt;
+         &lt;name&gt;yarn.nodemanager.env-whitelist&lt;/name&gt;
+         &lt;value&gt;JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME&lt;/value&gt;
+     &lt;/property&gt;
+ &lt;/configuration&gt;
+</code></pre>
+    </div>
+  </li>
+</ol>
 
 
-<!-- Pager -->
+                <hr style="visibility: hidden;">
+
+                                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2017/02/23/learn-javascript-1.html" data-toggle="tooltip" data-placement="top" title="学习javascript">
+                        Previous<br>
+                        <span>学习javascript</span>
+                        </a>
+                    </li>
+                    
+                    
+                </ul>
 
 
-    		</div>
+                
+
+                
+
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
     <!-- Sidebar Container -->
             <div class="
-                col-lg-3 col-lg-offset-0
-                col-md-3 col-md-offset-0
-                col-sm-12
-                col-xs-12
-                sidebar-container
-            ">
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
                 <!-- Featured Tags -->
                 
                 <section>
                     <hr class="hidden-sm hidden-xs">
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
-                        
+        				
                             
-                        
+        				
                             
-                        
+        				
                             
-                        
+        				
                             
-                        
+        				
                             
-                        
+        				
                             
-                        
+        				
                             
-                        
-                    </div>
+        				
+        			</div>
                 </section>
                 
 
-                <!-- Short About -->
-                <section class="visible-md visible-lg">
-                    <hr><h5><a href="/about/">ABOUT ME</a></h5>
-                    <div class="short-about">
-                        
-                            <img src="/styles/img/avatar-hux.jpg" />
-                        
-                        
-                            <p>看看生活，学学数据，<br>新的路上，一切都将开始</p>
-                        
-                        <!-- SNS Link -->
-                        <ul class="list-inline">
-                            
-                            
-                            
-                            <li>
-                                <a target="_blank" href="https://www.zhihu.com/people/mo-zhi-liang">
-                                    <span class="fa-stack fa-lg">
-                                        <i class="fa fa-circle fa-stack-2x"></i>
-                                        <i class="fa  fa-stack-1x fa-inverse">知</i>
-                                    </span>
-                                </a>
-                            </li>
-                            
-                            
-                            <li>
-                                <a target="_blank" href="http://weibo.com/mzl9039">
-                                    <span class="fa-stack fa-lg">
-                                        <i class="fa fa-circle fa-stack-2x"></i>
-                                        <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
-                                    </span>
-                                </a>
-                            </li>
-                            
-                            
-                            <li>
-                                <a target="_blank" href="https://www.facebook.com/mzl9039">
-                                    <span class="fa-stack fa-lg">
-                                        <i class="fa fa-circle fa-stack-2x"></i>
-                                        <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
-                                    </span>
-                                </a>
-                            </li>
-                            
-                            
-                            <li>
-                                <a target="_blank" href="https://github.com/mzl9039">
-                                    <span class="fa-stack fa-lg">
-                                        <i class="fa fa-circle fa-stack-2x"></i>
-                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
-                                    </span>
-                                </a>
-                            </li>
-                            
-                            
-                        </ul>
-                    </div>
-                </section>
                 <!-- Friends Blog -->
                 
                 <hr>
@@ -336,10 +399,53 @@
                     
                 </ul>
                 
-    		</div>
-        
-	</div>
-</div>
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
 
 
     <!-- Footer -->
@@ -493,6 +599,50 @@
 
 
 <!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/styles/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
 
 
 

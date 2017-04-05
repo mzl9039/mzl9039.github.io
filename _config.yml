@@ -73,7 +73,7 @@ rdiscount:
   extensions: []
 
 redcarpet:
-  extensions: []
+  extensions: [with_toc_data]
 
 markdown: kramdown
 kramdown:

@@ -7,7 +7,7 @@
     <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="生活和学习，现实与梦想，真实与想象 | mzl9039，好奇地看着这个世界，everything is on the way | 这里是 @mzl9039 的个人博客，享受生活，享受学习，想用技术让生活更有趣一些。">
-    <meta name="keywords"  content="mzl, mzl9039, 莫致良, @mzl9039, mzl9039 Blog, 博客, 个人网站, 小鱼, 空气中的鱼">
+    <meta name="keywords"  content="mzl, mzl9039, 莫致良, @mzl9039, mzl9039 Blog, 博客, 个人网站">
     <meta name="theme-color" content="#000000">
     
     <title>First Hadoop - mzl9039's Blog</title>
@@ -221,19 +221,18 @@ Hadoop 被默认配置为以 <strong>非并行</strong> 的 Mode 运行，即以
 <h5 id="local-modestandalone">Local Mode(Standalone)</h5>
 <p>这种模式下，Hadoop 作为一个单独的 Java 进程运行，这样全球调试，测试代码为</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>cd $HADOOP_HOME
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd $HADOOP_HOME
 mkdir input
 cp etc/hadoop/*.xml
 bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0-alpha2.jar grep input output 'dfs[a-z.]+'
 cat output/*
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h5 id="pseudo-distributed-mode">Pseudo-Distributed Mode</h5>
 <p>Hadoop 在 Pseudo-Dictionary 模式下，可以在单节点上运行，这里每个 hadoop deamon 都是一个分开的 java process
 首先使用如下配置</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>etc/hadoop/core.site.xml:
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etc/hadoop/core.site.xml:
 &lt;configuration&gt;
     &lt;property&gt;
         &lt;name&gt;fs.defaultFS&lt;/name&gt;
@@ -248,8 +247,7 @@ etc/hadoop/hdfs-site.xml
         &lt;value&gt;hdfs://localhost:9000&lt;/value&gt;
     &lt;/property&gt;
 &lt;/configuration&gt;
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>检查能否以 ssh 的方式连接：
 ssh localhost
@@ -261,32 +259,27 @@ ssh localhost
  这里 hadoop 镜像的日志会写个 $HADOOP_LOG_DIR 目录，默认是 $HADOOP_HOME/logs</li>
   <li>检查 Web 接口，默认地址为：```http://localhost:9870/``</li>
   <li>使 HDFS 目录能执行 MapReduce Job:
-    <div class="highlighter-rouge"><pre class="highlight"><code> bin/hdfs dfs -mkdir /user
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> bin/hdfs dfs -mkdir /user
  bin/hdfs dfs -mkdir /user/&lt;username&gt;
-</code></pre>
-    </div>
+</code></pre></div>    </div>
   </li>
   <li>把输入的文件拷贝到分布式文件系统中：
-    <div class="highlighter-rouge"><pre class="highlight"><code> bin/hdfs dfs -mkdir input
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> bin/hdfs dfs -mkdir input
  bin/hdfs dfs -put etc/hadoop/*.xml input
-</code></pre>
-    </div>
+</code></pre></div>    </div>
   </li>
   <li>运行程序：
-    <div class="highlighter-rouge"><pre class="highlight"><code> bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0-alpha2.jar grep input output 'dfs[a-z.]+'
-</code></pre>
-    </div>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0-alpha2.jar grep input output 'dfs[a-z.]+'
+</code></pre></div>    </div>
   </li>
   <li>将输出文件从分布式文件系统拷贝到本地文件系统并检查：
-    <div class="highlighter-rouge"><pre class="highlight"><code> bin/hdfs dfs -get output output
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> bin/hdfs dfs -get output output
  cat output/*
-</code></pre>
-    </div>
+</code></pre></div>    </div>
   </li>
   <li>结束镜像运行：
-    <div class="highlighter-rouge"><pre class="highlight"><code> sbin/stop-dfs.sh
-</code></pre>
-    </div>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> sbin/stop-dfs.sh
+</code></pre></div>    </div>
   </li>
 </ol>
 
@@ -295,16 +288,15 @@ ssh localhost
 <ol>
   <li>配置如下：
 etc/hadoop/mapred-site.xml
-    <div class="highlighter-rouge"><pre class="highlight"><code> &lt;configuration&gt;
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> &lt;configuration&gt;
      &lt;property&gt;
          &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
          &lt;value&gt;yarn&lt;/value&gt;
      &lt;/property&gt;
  &lt;/configuration&gt;
-</code></pre>
-    </div>
+</code></pre></div>    </div>
     <p>etc/hadoop/yarn-site.xml</p>
-    <div class="highlighter-rouge"><pre class="highlight"><code> &lt;configuration&gt;
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> &lt;configuration&gt;
      &lt;property&gt;
          &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
          &lt;value&gt;mapreduce-shuffle&lt;/value&gt;
@@ -314,8 +306,7 @@ etc/hadoop/mapred-site.xml
          &lt;value&gt;JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME&lt;/value&gt;
      &lt;/property&gt;
  &lt;/configuration&gt;
-</code></pre>
-    </div>
+</code></pre></div>    </div>
   </li>
 </ol>
 
@@ -503,7 +494,7 @@ etc/hadoop/mapred-site.xml
                     
                 </ul>
                 <p class="copyright text-muted">
-                    Copyright &copy; mzl9039 2017
+                    Copyright &copy; mzl9039 2018
                     <br>
                     Theme by <a href="https://mzl9039.github.io">mzl9039</a> |
                     <iframe

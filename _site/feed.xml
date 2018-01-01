@@ -5,9 +5,9 @@
     <description>生活和学习，现实与梦想，真实与想象 | mzl9039，好奇地看着这个世界，everything is on the way | 这里是 @mzl9039 的个人博客，享受生活，享受学习，想用技术让生活更有趣一些。</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 05 Apr 2017 10:26:34 +0800</pubDate>
-    <lastBuildDate>Wed, 05 Apr 2017 10:26:34 +0800</lastBuildDate>
-    <generator>Jekyll v3.3.1</generator>
+    <pubDate>Mon, 01 Jan 2018 01:28:07 +0800</pubDate>
+    <lastBuildDate>Mon, 01 Jan 2018 01:28:07 +0800</lastBuildDate>
+    <generator>Jekyll v3.6.2</generator>
     
       <item>
         <title>First Hadoop</title>
@@ -36,19 +36,18 @@ Hadoop 被默认配置为以 &lt;strong&gt;非并行&lt;/strong&gt; 的 Mode 运
 &lt;h5 id=&quot;local-modestandalone&quot;&gt;Local Mode(Standalone)&lt;/h5&gt;
 &lt;p&gt;这种模式下，Hadoop 作为一个单独的 Java 进程运行，这样全球调试，测试代码为&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd $HADOOP_HOME
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd $HADOOP_HOME
 mkdir input
 cp etc/hadoop/*.xml
 bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0-alpha2.jar grep input output 'dfs[a-z.]+'
 cat output/*
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h5 id=&quot;pseudo-distributed-mode&quot;&gt;Pseudo-Distributed Mode&lt;/h5&gt;
 &lt;p&gt;Hadoop 在 Pseudo-Dictionary 模式下，可以在单节点上运行，这里每个 hadoop deamon 都是一个分开的 java process
 首先使用如下配置&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;etc/hadoop/core.site.xml:
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;etc/hadoop/core.site.xml:
 &amp;lt;configuration&amp;gt;
     &amp;lt;property&amp;gt;
         &amp;lt;name&amp;gt;fs.defaultFS&amp;lt;/name&amp;gt;
@@ -63,8 +62,7 @@ etc/hadoop/hdfs-site.xml
         &amp;lt;value&amp;gt;hdfs://localhost:9000&amp;lt;/value&amp;gt;
     &amp;lt;/property&amp;gt;
 &amp;lt;/configuration&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;检查能否以 ssh 的方式连接：
 ssh localhost
@@ -76,32 +74,27 @@ ssh localhost
  这里 hadoop 镜像的日志会写个 $HADOOP_LOG_DIR 目录，默认是 $HADOOP_HOME/logs&lt;/li&gt;
   &lt;li&gt;检查 Web 接口，默认地址为：```http://localhost:9870/``&lt;/li&gt;
   &lt;li&gt;使 HDFS 目录能执行 MapReduce Job:
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; bin/hdfs dfs -mkdir /user
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; bin/hdfs dfs -mkdir /user
  bin/hdfs dfs -mkdir /user/&amp;lt;username&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;把输入的文件拷贝到分布式文件系统中：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; bin/hdfs dfs -mkdir input
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; bin/hdfs dfs -mkdir input
  bin/hdfs dfs -put etc/hadoop/*.xml input
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;运行程序：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0-alpha2.jar grep input output 'dfs[a-z.]+'
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0-alpha2.jar grep input output 'dfs[a-z.]+'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;将输出文件从分布式文件系统拷贝到本地文件系统并检查：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; bin/hdfs dfs -get output output
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; bin/hdfs dfs -get output output
  cat output/*
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;结束镜像运行：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; sbin/stop-dfs.sh
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; sbin/stop-dfs.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -110,16 +103,15 @@ ssh localhost
 &lt;ol&gt;
   &lt;li&gt;配置如下：
 etc/hadoop/mapred-site.xml
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &amp;lt;configuration&amp;gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &amp;lt;configuration&amp;gt;
      &amp;lt;property&amp;gt;
          &amp;lt;name&amp;gt;mapreduce.framework.name&amp;lt;/name&amp;gt;
          &amp;lt;value&amp;gt;yarn&amp;lt;/value&amp;gt;
      &amp;lt;/property&amp;gt;
  &amp;lt;/configuration&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;etc/hadoop/yarn-site.xml&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &amp;lt;configuration&amp;gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &amp;lt;configuration&amp;gt;
      &amp;lt;property&amp;gt;
          &amp;lt;name&amp;gt;yarn.nodemanager.aux-services&amp;lt;/name&amp;gt;
          &amp;lt;value&amp;gt;mapreduce-shuffle&amp;lt;/value&amp;gt;
@@ -129,8 +121,7 @@ etc/hadoop/mapred-site.xml
          &amp;lt;value&amp;gt;JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME&amp;lt;/value&amp;gt;
      &amp;lt;/property&amp;gt;
  &amp;lt;/configuration&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 </description>
@@ -158,9 +149,8 @@ etc/hadoop/mapred-site.xml
     &lt;ol&gt;
       &lt;li&gt;网页的任何地方，一般在&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;head&amp;gt;&lt;/code&gt;标签中，并用&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;script&amp;gt;&amp;lt;/script&amp;gt;&lt;/code&gt;括起来&lt;/li&gt;
       &lt;li&gt;代码放在以 js 后缀的文件中，用如下方式引用：
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;script&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/static/js/jsfile.js&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/script&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;script&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/static/js/jsfile.js&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/script&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;有些 script 标签时包含 &lt;code class=&quot;highlighter-rouge&quot;&gt;type&lt;/code&gt; 属性，这是不需要的，因为默认的 &lt;code class=&quot;highlighter-rouge&quot;&gt;type&lt;/code&gt; 就是javascript
  当同一个页面引用多个 js 文件时，浏览器会按顺序执行
  这种方式更加推荐，更利用维护和代码重用&lt;/p&gt;
@@ -175,8 +165,8 @@ etc/hadoop/mapred-site.xml
 
 &lt;h3 id=&quot;基本语法&quot;&gt;基本语法&lt;/h3&gt;
 &lt;ol&gt;
-  &lt;li&gt;语句以 &lt;code class=&quot;highlighter-rouge&quot;&gt;;&lt;/code&gt; 结束，语句块为 &lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;, 虽然js不强制要求添加 &lt;code class=&quot;highlighter-rouge&quot;&gt;;&lt;/code&gt; ,但我们写规范代码时要求这样做。
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;      &lt;span class=&quot;c1&quot;&gt;// 完整的赋值语句&lt;/span&gt;
+  &lt;li&gt;语句以 &lt;code class=&quot;highlighter-rouge&quot;&gt;;&lt;/code&gt; 结束，语句块为 &lt;code class=&quot;highlighter-rouge&quot;&gt;{...}&lt;/code&gt;, 虽然js不强制要求添加 &lt;code class=&quot;highlighter-rouge&quot;&gt;;&lt;/code&gt; ,但我们写规范代码时要求这样做。
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;      &lt;span class=&quot;c1&quot;&gt;// 完整的赋值语句&lt;/span&gt;
  &lt;span class=&quot;err&quot;&gt;”&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;hello&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;world&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;“&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 也是完整的语句&lt;/span&gt;
  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;   &lt;span class=&quot;c1&quot;&gt;// 不建议一行写多个语句&lt;/span&gt;
  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;// 语句块&lt;/span&gt;
@@ -185,8 +175,7 @@ etc/hadoop/mapred-site.xml
      &lt;span class=&quot;nx&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
  &lt;span class=&quot;c1&quot;&gt;// 注释符号有两种，分别为 //(单行注释) 和 /* ... */（多行注释）&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;javascript严格区分大小写&lt;/li&gt;
 &lt;/ol&gt;
@@ -198,29 +187,27 @@ javascript的数据类型有：
     &lt;ol&gt;
       &lt;li&gt;Number
  不区分浮点数和整点数，如下：
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;mi&quot;&gt;123&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;        &lt;span class=&quot;c1&quot;&gt;// 整数&lt;/span&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;mi&quot;&gt;123&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;        &lt;span class=&quot;c1&quot;&gt;// 整数&lt;/span&gt;
  &lt;span class=&quot;mf&quot;&gt;0.456&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;      &lt;span class=&quot;c1&quot;&gt;// 浮点数&lt;/span&gt;
  &lt;span class=&quot;mf&quot;&gt;1.23e3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;     &lt;span class=&quot;c1&quot;&gt;// 科学计数法&lt;/span&gt;
  &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;99&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;        &lt;span class=&quot;c1&quot;&gt;// 负数&lt;/span&gt;
  &lt;span class=&quot;kc&quot;&gt;NaN&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;        &lt;span class=&quot;c1&quot;&gt;// Not a Number&lt;/span&gt;
  &lt;span class=&quot;kc&quot;&gt;Infinity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;   &lt;span class=&quot;c1&quot;&gt;// 无限大，当数值超过javascript所能表示的最大值时，表示为Infinity&lt;/span&gt;
  &lt;span class=&quot;mh&quot;&gt;0xff00&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;     &lt;span class=&quot;c1&quot;&gt;// 十六进制，使用 0x 前缀和 0-9 a-f 表示&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;四则运算与数学一致：&lt;/p&gt;
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;          &lt;span class=&quot;c1&quot;&gt;// 加号&lt;/span&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;          &lt;span class=&quot;c1&quot;&gt;// 加号&lt;/span&gt;
  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;// 减号，乘号，除号&lt;/span&gt;
  &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;；&lt;/span&gt;         &lt;span class=&quot;c1&quot;&gt;// Infinity&lt;/span&gt;
  &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;          &lt;span class=&quot;c1&quot;&gt;// NaN&lt;/span&gt;
  &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;         &lt;span class=&quot;c1&quot;&gt;// 1, % 求余符号&lt;/span&gt;
  &lt;span class=&quot;mf&quot;&gt;10.5&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;       &lt;span class=&quot;c1&quot;&gt;// 1.5&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;字符串&lt;/li&gt;
       &lt;li&gt;布尔值
  true 和 false 两种，也可以通过布尔运算结果表示
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;c1&quot;&gt;// 基本表示&lt;/span&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;c1&quot;&gt;// 基本表示&lt;/span&gt;
  &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 这是一个true值&lt;/span&gt;
  &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 这是一个false值&lt;/span&gt;
  &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 这是一个true值&lt;/span&gt;
@@ -234,8 +221,7 @@ javascript的数据类型有：
  &lt;span class=&quot;c1&quot;&gt;// ！ 非运算，真假相反&lt;/span&gt;
  &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 结果为false&lt;/span&gt;
  &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 结果为true&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;比较运算符
  javascript 允许任意类型数据做比较，但 javascript 存在两种比较运算符：&lt;code class=&quot;highlighter-rouge&quot;&gt;==&lt;/code&gt; 和 &lt;code class=&quot;highlighter-rouge&quot;&gt;===&lt;/code&gt;:
@@ -243,12 +229,11 @@ javascript的数据类型有：
  &lt;code class=&quot;highlighter-rouge&quot;&gt;===&lt;/code&gt; 不会自动转换数据类型，如果数据类型不一致，则返回 false
  因此建议比较时， &lt;strong&gt;不要&lt;/strong&gt;使用 &lt;code class=&quot;highlighter-rouge&quot;&gt;==&lt;/code&gt;,始终坚持使用 &lt;code class=&quot;highlighter-rouge&quot;&gt;===&lt;/code&gt; 进行比较
  一些特别说明的比较结果：
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kc&quot;&gt;NaN&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;NaN&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;// false, NaN与其它所有值比较都为false，包括它自己&lt;/span&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kc&quot;&gt;NaN&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;NaN&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;// false, NaN与其它所有值比较都为false，包括它自己&lt;/span&gt;
  &lt;span class=&quot;nb&quot;&gt;isNaN&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;NaN&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;     &lt;span class=&quot;c1&quot;&gt;// true, 唯一能判断 NaN 的方法是通过 isNaN() 函数&lt;/span&gt;
  &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;// false，注意浮点数比较，浮点数运算时会产生误差，因此比较两个浮点数时，只能计算它们之间的绝对值，看是否小于某个阈值&lt;/span&gt;
  &lt;span class=&quot;nb&quot;&gt;Math&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;abs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.0000001&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;// true&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;null和undefined
  &lt;code class=&quot;highlighter-rouge&quot;&gt;null&lt;/code&gt; 表示‘空’值，它与 &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt; 以及 空字符串&lt;code class=&quot;highlighter-rouge&quot;&gt;''&lt;/code&gt; 不同，&lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt;是一个数值，&lt;code class=&quot;highlighter-rouge&quot;&gt;''&lt;/code&gt;是一个长度为0的字符串，而&lt;code class=&quot;highlighter-rouge&quot;&gt;null&lt;/code&gt;表示为空
@@ -256,22 +241,20 @@ javascript的数据类型有：
  大多数我们使用 &lt;code class=&quot;highlighter-rouge&quot;&gt;null&lt;/code&gt;,只有在判断函数参数是否传递时，才使用 &lt;code class=&quot;highlighter-rouge&quot;&gt;undefined&lt;/code&gt;&lt;/li&gt;
       &lt;li&gt;数组
  数组是一组按顺序排列的集合，集合中的每个值称为元素，数组中可以包含任意类型的数据,如：
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;3.14&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hello'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;3.14&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hello'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;还可以用 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array()&lt;/code&gt; 函数创建数组，如 ` new Array(1, 2, 3) // 创建数组[1, 2, 3]&lt;code class=&quot;highlighter-rouge&quot;&gt;
  建议全部使用 &lt;/code&gt;[]` 创建数组
  数组元素通过索引访问，索引从0开始，如：&lt;/p&gt;
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;arr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;3.14&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hello'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;arr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;3.14&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hello'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;arr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 返回索引为0的元素，即1&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;arr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 返回索引为5的元素，即true&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;arr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 索引超出了范围，返回undefined&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;对象
  JavaScript的对象是一组由键-值组成的无序集合,其中键是字符串类型，值可以是任意类型，例如：
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;person&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;person&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
      &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Bob'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
      &lt;span class=&quot;na&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
      &lt;span class=&quot;na&quot;&gt;tags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'js'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'web'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'mobile'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
@@ -283,18 +266,16 @@ javascript的数据类型有：
  &lt;span class=&quot;c1&quot;&gt;// 通过 . 获取对象的属性，如&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;// &quot;Bob&quot;&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zipcode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// null&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;
   &lt;li&gt;变量:
 变量命名规则：略
 在JavaScript中，使用等号=对变量进行赋值。可以把任意数据类型赋值给变量，同一个变量可以反复赋值，而且可以是不同类型的变量，但是要注意只能用var申明一次，例如：
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;123&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// a的值是整数123&lt;/span&gt;
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;123&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// a的值是整数123&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'ABC'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// a变为字符串&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;strict 模式
     &lt;ol&gt;
@@ -304,9 +285,8 @@ javascript的数据类型有：
       &lt;li&gt;为了修补JavaScript这一严重设计缺陷，ECMA在后续规范中推出了strict模式，在strict模式下运行的JavaScript代码，
  强制通过var申明变量，未使用var申明变量就使用的，将导致运行错误。&lt;/li&gt;
       &lt;li&gt;启用strict模式的方法是在JavaScript代码的第一行写上：
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nx&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;strict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nx&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;strict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;
@@ -317,7 +297,7 @@ javascript的数据类型有：
   &lt;li&gt;JavaScript的字符串用 &lt;code class=&quot;highlighter-rouge&quot;&gt;''&lt;/code&gt; 或 &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;&quot;&lt;/code&gt; 括起来表示&lt;/li&gt;
   &lt;li&gt;如果 &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt; 本身也是字符串中的字符，则用 &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;&quot;&lt;/code&gt; 括起来&lt;/li&gt;
   &lt;li&gt;如果字符串中即包括 &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt;，也包括 &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;&lt;/code&gt;，则用转义字符 &lt;code class=&quot;highlighter-rouge&quot;&gt;\\&lt;/code&gt; 来标识,如：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'I\'m \&quot;OK\&quot;!';     // I'm &quot;OK&quot;!
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'I\'m \&quot;OK\&quot;!';     // I'm &quot;OK&quot;!
  // 转义字符 \ 可以转义很多字符
  \n                  // 换行符
  \t                  // 制表符
@@ -326,77 +306,68 @@ javascript的数据类型有：
  '\x41';             // 完全等同于 'A'
  // Unicode 用 \u#### 形式表示
  '\u4e2d\u6587';     // 完全等同于 '中文'
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;多行字符串
     &lt;ol&gt;
       &lt;li&gt;用换行符 &lt;code class=&quot;highlighter-rouge&quot;&gt;\n&lt;/code&gt; 来换行；&lt;/li&gt;
       &lt;li&gt;用反引号 &lt;code class=&quot;highlighter-rouge&quot;&gt;\&lt;/code&gt;` 来表示(这是ES6中的新标准，可能不被支持)，如：
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;err&quot;&gt;`这是一个&lt;/span&gt;
- &lt;span class=&quot;err&quot;&gt;多行&lt;/span&gt;
- &lt;span class=&quot;err&quot;&gt;字符串`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;s2&quot;&gt;`这是一个
+ 多行
+ 字符串`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;
   &lt;li&gt;模板字符串
 多个字符串连接时，可以用 &lt;code class=&quot;highlighter-rouge&quot;&gt;+&lt;/code&gt; 连接，如：
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'小明'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'小明'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;age&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'你好, '&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;', 你今年'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;age&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'岁了!'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;但很多变量需要连接时，用 &lt;code class=&quot;highlighter-rouge&quot;&gt;+&lt;/code&gt; 比较麻烦（没看出来），ES6新标准增加了一种模板字符串（语法糖，可读性更好了）,变量用&lt;code class=&quot;highlighter-rouge&quot;&gt;${}&lt;/code&gt;表示，如下：&lt;/p&gt;
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'小明'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'小明'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;age&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
- &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;`你好&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;你今年&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;岁了&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;`你好, &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;, 你今年&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;岁了!`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;字符串操作
     &lt;ol&gt;
       &lt;li&gt;字符串长度：用 &lt;strong&gt;属性&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;length&lt;/code&gt;:
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hello, world!'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hello, world!'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 13&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;获取字符串中的字符，用 &lt;code class=&quot;highlighter-rouge&quot;&gt;[]&lt;/code&gt;，索引从0开始：
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hello, world!'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hello, world!'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 'H'&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// ' '&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 'w'&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;12&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// '!'&lt;/span&gt;
  &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;13&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// undefined 超出范围的索引不会报错，但一律返回undefined&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;字符串不可变，对某个字符串的某个索引赋值，不会报错，但也不会有效果，示例如下：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s = 'Test';
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s = 'Test';
  s[0] = 'X';
  alert(s); // s仍然为'Test'
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;toUpperCase(),将字符串内全部字符变为大写字符&lt;/li&gt;
       &lt;li&gt;toLowerCase(),将字符串内全部字符变为小写字符&lt;/li&gt;
       &lt;li&gt;indexOf(),搜索字符串出现的位置，如：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s = 'hello, world';
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s = 'hello, world';
  s.indexOf('world'); // 返回7
  s.indexOf('World'); // 没有找到指定的子串，返回-1
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;substring(),返回索引区间内的子串，如：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s = 'hello, world'
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s = 'hello, world'
  s.substring(0, 5); // 从索引0开始到5（不包括5），返回'hello'
  s.substring(7); // 从索引7开始到结束，返回'world'
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;
@@ -408,20 +379,18 @@ javascript的数据类型有：
   &lt;li&gt;数组长度
     &lt;ol&gt;
       &lt;li&gt;用 &lt;strong&gt;属性&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;length&lt;/code&gt; 获得，如：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2, 3.14, 'Hello', null, true];
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2, 3.14, 'Hello', null, true];
  arr.length; // 6
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;给 &lt;code class=&quot;highlighter-rouge&quot;&gt;length&lt;/code&gt; 赋值会引入 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 大小变化，如：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2, 3];
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2, 3];
  arr.length;         // 3
  arr.length = 6;
  arr;                // arr变为[1, 2, 3, undefined, undefined, undefined]
  arr.length = 2;
  arr;                // arr变为[1, 2]
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;
@@ -429,7 +398,7 @@ javascript的数据类型有：
     &lt;ol&gt;
       &lt;li&gt;获取数组某一元素，用 &lt;code class=&quot;highlighter-rouge&quot;&gt;[]&lt;/code&gt;&lt;/li&gt;
       &lt;li&gt;给数组某一元素赋值，会修改数组， &lt;strong&gt;特别注意&lt;/strong&gt;：索引超出范围，会引入数组大小变化
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = ['A', 'B', 'C'];
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = ['A', 'B', 'C'];
  arr[1] = 99;
  arr; // arr现在变为['A', 99, 'C']
 
@@ -437,37 +406,34 @@ javascript的数据类型有：
  var arr = [1, 2, 3];
  arr[5] = 'x';
  arr; // arr变为[1, 2, 3, undefined, undefined, 'x']
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;因此 &lt;strong&gt;建议&lt;/strong&gt;: 大多数其他编程语言不允许直接改变数组的大小，越界访问索引会报错。然而，JavaScript的Array却不会有任何错误。
  在编写代码时，不建议直接修改Array的大小，访问索引时要确保索引不会越界。&lt;/p&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;
   &lt;li&gt;indexOf(), 搜索某一元素的位置，没找到时返回 -1，如：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [10, 20, '30', 'xyz'];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [10, 20, '30', 'xyz'];
  arr.indexOf(10);    // 元素10的索引为0
  arr.indexOf(20);    // 元素20的索引为1
  arr.indexOf(30);    // 元素30没有找到，返回-1
  arr.indexOf('30');  // 元素'30'的索引为2,注意 数字30和字符串'30'是不同的元素
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;slice(),截取 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;的部分元素，并返回一个新的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;，类似于字符串的 &lt;code class=&quot;highlighter-rouge&quot;&gt;substring&lt;/code&gt;
 &lt;code class=&quot;highlighter-rouge&quot;&gt;slice()&lt;/code&gt; 包括起始索引，但不包括结束索引
 如果不给 &lt;code class=&quot;highlighter-rouge&quot;&gt;slice()&lt;/code&gt; 任何参数，它会从头到尾截取所有元素，可以用来复制数组
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
  arr.slice(0, 3);    // 从索引0开始，到索引3结束，但不包括索引3: ['A', 'B', 'C']
  arr.slice(3);       // 从索引3开始到结束: ['D', 'E', 'F', 'G']
  var arr = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
  var aCopy = arr.slice();
  aCopy;              // ['A', 'B', 'C', 'D', 'E', 'F', 'G']
  aCopy === arr;      // false
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;push() 和 pop(), &lt;code class=&quot;highlighter-rouge&quot;&gt;push()&lt;/code&gt; 向 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 末尾添加&lt;strong&gt;若干&lt;/strong&gt;元素，&lt;code class=&quot;highlighter-rouge&quot;&gt;pop()&lt;/code&gt; 则把 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 最后一个元素删除
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2];
  arr.push('A', 'B'); // 返回Array新的长度: 4
  arr; // [1, 2, 'A', 'B']
  arr.pop(); // pop()返回'B'
@@ -476,11 +442,10 @@ javascript的数据类型有：
  arr; // []
  arr.pop(); // 空数组继续pop不会报错，而是返回undefined
  arr; // []
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;unshift() 和 shift(), &lt;code class=&quot;highlighter-rouge&quot;&gt;unshift()&lt;/code&gt; 向 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 头部添加 &lt;strong&gt;若干&lt;/strong&gt;元素，&lt;code class=&quot;highlighter-rouge&quot;&gt;shift()&lt;/code&gt; 则把 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 第一个元素删除
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2];
  arr.unshift('A', 'B'); // 返回Array新的长度: 4
  arr; // ['A', 'B', 1, 2]
  arr.shift(); // 'A'
@@ -489,13 +454,12 @@ javascript的数据类型有：
  arr; // []
  arr.shift(); // 空数组继续shift不会报错，而是返回undefined
  arr; // []
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;sort(), 对当前 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 进行排序，会直接修改元素的位置，按默认顺序规则排序&lt;/li&gt;
   &lt;li&gt;reverse(), 把当前 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 反转&lt;/li&gt;
   &lt;li&gt;splice(), 是修改 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 的万能方法，可以从指定的索引开始删除若干元素，然后再从这个位置添加若干元素
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var arr = ['Microsoft', 'Apple', 'Yahoo', 'AOL', 'Excite', 'Oracle'];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var arr = ['Microsoft', 'Apple', 'Yahoo', 'AOL', 'Excite', 'Oracle'];
 // 从索引2开始删除3个元素,然后再添加两个元素:
 arr.splice(2, 3, 'Google', 'Facebook'); // 返回删除的元素 ['Yahoo', 'AOL', 'Excite']
 arr;                                    // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
@@ -507,21 +471,18 @@ arr;                                    // ['Microsoft', 'Apple', 'Oracle']
 // 只添加,不删除:
 arr.splice(2, 0, 'Google', 'Facebook'); // 返回[],因为没有删除任何元素
 arr;                                    // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;concat(), 把当前的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 和另一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 连接在一起，并返回&lt;strong&gt;新的&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;
 实际上，&lt;code class=&quot;highlighter-rouge&quot;&gt;concat()&lt;/code&gt; 方法可以接受任意个元素和 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;，并且自动把 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 拆开，然后全部添加到新的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;中，如：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var arr = ['A', 'B', 'C'];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var arr = ['A', 'B', 'C'];
 arr.concat(1, 2, [3, 4]);   // ['A', 'B', 'C', 1, 2, 3, 4]
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;join(), 把当前的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 中的每个元素，按指定的字符串连接起来，并然后连接起来的字符串, 如果 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 中的元素不是字符串，则会自动转为字符串
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var arr = ['A', 'B', 'C', 1, 2, 3];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var arr = ['A', 'B', 'C', 1, 2, 3];
 arr.join('-'); // 'A-B-C-1-2-3'
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;多维数组，即 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 中的某个元素又是 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;,如：&lt;code class=&quot;highlighter-rouge&quot;&gt;var arr = [[1, 2, 3], [400, 500, 600], '-'];&lt;/code&gt;&lt;/li&gt;
 &lt;/ol&gt;
@@ -529,8 +490,8 @@ arr.join('-'); // 'A-B-C-1-2-3'
 &lt;h3 id=&quot;对象&quot;&gt;对象&lt;/h3&gt;
 &lt;ol&gt;
   &lt;li&gt;javascript 对象是一种无序的集合数据类型，它由若干键值对组成,用于描述现实世界中的对象，如
-用 &lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt; 表示一个对象，键值对用 &lt;code class=&quot;highlighter-rouge&quot;&gt;xxx:xxx&lt;/code&gt; 表示，不同键值对用 &lt;code class=&quot;highlighter-rouge&quot;&gt;,&lt;/code&gt; 隔开，注意最后一个键值对不需要加 &lt;code class=&quot;highlighter-rouge&quot;&gt;,&lt;/code&gt;，否则一些老的浏览器会报错（此处必须有IE）
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaoming = {
+用 &lt;code class=&quot;highlighter-rouge&quot;&gt;{...}&lt;/code&gt; 表示一个对象，键值对用 &lt;code class=&quot;highlighter-rouge&quot;&gt;xxx:xxx&lt;/code&gt; 表示，不同键值对用 &lt;code class=&quot;highlighter-rouge&quot;&gt;,&lt;/code&gt; 隔开，注意最后一个键值对不需要加 &lt;code class=&quot;highlighter-rouge&quot;&gt;,&lt;/code&gt;，否则一些老的浏览器会报错（此处必须有IE）
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaoming = {
      name: '小明',
      birth: 1990,
      school: 'No.1 Middle School',
@@ -538,36 +499,32 @@ arr.join('-'); // 'A-B-C-1-2-3'
      weight: 65,
      score: null
  };
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;属性定义和访问
 属性用 &lt;code class=&quot;highlighter-rouge&quot;&gt;.&lt;/code&gt; 来访问，如：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;xiaoming.name; // '小明'
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;xiaoming.name; // '小明'
 xiaoming.birth; // 1990
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;属性名必须是有效的变量名，如果包含特殊字符，属性名需要用 ‘’ 括起来，其访问也必须用 &lt;code class=&quot;highlighter-rouge&quot;&gt;[xxx]&lt;/code&gt; ,如：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaohong = {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaohong = {
      name: '小红',
      'middle-school': 'No.1 Middle School'
  };
  xiaohong['middle-school'];  // 'No.1 Middle School'
  xiaohong['name'];           // '小红'
  xiaohong.name;              // '小红'
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;访问的属性不存在时，不会报错，而是返回 &lt;code class=&quot;highlighter-rouge&quot;&gt;undefined&lt;/code&gt;&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaoming = {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaoming = {
      name: '小明'
  };
  xiaoming.age; // undefined
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;属性添加和修改
 由于JavaScript的对象是动态类型，你可以自由地给一个对象添加或删除属性：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaoming = {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaoming = {
      name: '小明'
  };
  xiaoming.age;           // undefined
@@ -582,13 +539,12 @@ xiaoming.birth; // 1990
  xiaoming.name;          // undefined
 
  delete xiaoming.school; // 删除一个不存在的school属性也不会报错
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;检测某个对象是否存在某个属性，可以用 &lt;code class=&quot;highlighter-rouge&quot;&gt;in&lt;/code&gt; 操作符：
 不过用 &lt;code class=&quot;highlighter-rouge&quot;&gt;in&lt;/code&gt; 判断属性是否存在时，这个属性可能不是对象的，而这个对象继承得到的，如 &lt;code class=&quot;highlighter-rouge&quot;&gt;toString&lt;/code&gt; 属性，
 要判断一个属性是否是某对象自身拥有的，而不是继承得到的，可以使用函数 &lt;code class=&quot;highlighter-rouge&quot;&gt;hasOwnProperty()&lt;/code&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaoming = {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var xiaoming = {
      name: '小明',
      birth: 1990,
      school: 'No.1 Middle School',
@@ -606,8 +562,7 @@ xiaoming.birth; // 1990
  };
  xiaoming.hasOwnProperty('name'); // true
  xiaoming.hasOwnProperty('toString'); // false
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -617,18 +572,17 @@ xiaoming.birth; // 1990
 &lt;h3 id=&quot;循环&quot;&gt;循环&lt;/h3&gt;
 &lt;ol&gt;
   &lt;li&gt;for 循环
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // 通过索引遍历数组
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // 通过索引遍历数组
  var arr = ['Apple', 'Google', 'Microsoft'];
  var i, x;
  for (i=0; i&amp;lt;arr.length; i++) {
      x = arr[i];
      alert(x);
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;for…in
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // 例如把对象的所有属性依次遍历
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // 例如把对象的所有属性依次遍历
  var o = {
      name: 'Jack',
      age: 20,
@@ -650,50 +604,45 @@ xiaoming.birth; // 1990
      alert(i); // '0', '1', '2'
      alert(a[i]); // 'A', 'B', 'C'
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;h3 id=&quot;map和set&quot;&gt;Map和Set&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;说明&lt;/strong&gt;：JavaScript的默认对象表示方式 &lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;&lt;/code&gt; 可以视为其他语言中的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Map&lt;/code&gt; 或 &lt;code class=&quot;highlighter-rouge&quot;&gt;Dictionary&lt;/code&gt; 的数据结构，即一组键值对。
+&lt;p&gt;&lt;strong&gt;说明&lt;/strong&gt;：JavaScript的默认对象表示方式 &lt;code class=&quot;highlighter-rouge&quot;&gt;{}&lt;/code&gt; 可以视为其他语言中的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Map&lt;/code&gt; 或 &lt;code class=&quot;highlighter-rouge&quot;&gt;Dictionary&lt;/code&gt; 的数据结构，即一组键值对。
 但是JavaScript的对象有个小问题，就是键必须是字符串。但实际上Number或者其他数据类型作为键也是非常合理的。
 为了解决这个问题，最新的ES6规范引入了新的数据类型 &lt;code class=&quot;highlighter-rouge&quot;&gt;Map&lt;/code&gt; 和 &lt;code class=&quot;highlighter-rouge&quot;&gt;Set&lt;/code&gt;。&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 测试浏览器是否支持 Map 和 Set 的代码
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 测试浏览器是否支持 Map 和 Set 的代码
 'use strict';
 var m = new Map();
 var s = new Set();
 alert('你的浏览器支持Map和Set！');
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;ol&gt;
   &lt;li&gt;Map ，是一组键值对结构，具有极快的查找速度
     &lt;ol&gt;
       &lt;li&gt;Map 初始化
  使用二维数组初始化，用 javascript 写一个 Map 如下：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var m = new Map([['Michael', 95], ['Bob', 75], ['Tracy', 85]]);
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var m = new Map([['Michael', 95], ['Bob', 75], ['Tracy', 85]]);
  m.get('Michael'); // 95
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;直接初始化一个空的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Map&lt;/code&gt;&lt;/p&gt;
       &lt;/li&gt;
       &lt;li&gt;Map 的方法有 &lt;code class=&quot;highlighter-rouge&quot;&gt;set(x, x), has(x), get(x), delete(x)&lt;/code&gt;，如：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var m = new Map();  // 空Map
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var m = new Map();  // 空Map
  m.set('Adam', 67);  // 添加新的key-value
  m.set('Bob', 59);
  m.has('Adam');      // 是否存在key 'Adam': true
  m.get('Adam');      // 67
  m.delete('Adam');   // 删除key 'Adam'
  m.get('Adam');      // undefined
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;set 方法赋值时，会把原来这个属性的值冲掉，如：&lt;/p&gt;
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var m = new Map();
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var m = new Map();
  m.set('Adam', 67);
  m.set('Adam', 88);
  m.get('Adam'); // 88
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;
@@ -701,18 +650,16 @@ alert('你的浏览器支持Map和Set！');
     &lt;ol&gt;
       &lt;li&gt;创建 &lt;code class=&quot;highlighter-rouge&quot;&gt;Set&lt;/code&gt;
  创建一个空的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Set&lt;/code&gt;, 或提供一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 作为输入：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s1 = new Set();         // 空Set
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s1 = new Set();         // 空Set
  var s2 = new Set([1, 2, 3]);// 含1, 2, 3
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;重复元素会被自动过滤，如：&lt;/p&gt;
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s = new Set([1, 2, 3, 3, '3']);
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var s = new Set([1, 2, 3, 3, '3']);
  s;                          // Set {1, 2, 3, &quot;3&quot;}
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;操作 &lt;code class=&quot;highlighter-rouge&quot;&gt;Set&lt;/code&gt; 的函数有 &lt;code class=&quot;highlighter-rouge&quot;&gt;add(key) delete(key)&lt;/code&gt;:
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; s.add(4);
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; s.add(4);
  s;              // {1, 2, 3, 4}
  s.add(4);       // 重复添加不会有效果
  s;              // {1, 2, 3, 4}
@@ -720,8 +667,7 @@ alert('你的浏览器支持Map和Set！');
  s;              // Set {1, 2, 3}
  s.delete(3);
  s;              // Set {1, 2}
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;
@@ -732,16 +678,15 @@ alert('你的浏览器支持Map和Set！');
 为了统一集合类型，ES6标准引入了新的 &lt;code class=&quot;highlighter-rouge&quot;&gt;iterable&lt;/code&gt; 类型，&lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;Map&lt;/code&gt;和 &lt;code class=&quot;highlighter-rouge&quot;&gt;Set&lt;/code&gt;都属于 &lt;code class=&quot;highlighter-rouge&quot;&gt;iterable&lt;/code&gt; 类型。
 具有 &lt;code class=&quot;highlighter-rouge&quot;&gt;iterable&lt;/code&gt; 类型的集合可以通过新的 &lt;code class=&quot;highlighter-rouge&quot;&gt;for ... of&lt;/code&gt; 循环来遍历。
 检测浏览器是否支持 &lt;code class=&quot;highlighter-rouge&quot;&gt;for ... of&lt;/code&gt; 的语法：&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;'use strict';
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;'use strict';
 var a = [1, 2, 3];
 for (var x of a) {
 }
 alert('你的浏览器支持for ... of');
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;ol&gt;
   &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;for ... of&lt;/code&gt; 的用法：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var a = ['A', 'B', 'C'];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var a = ['A', 'B', 'C'];
 var s = new Set(['A', 'B', 'C']);
 var m = new Map([[1, 'x'], [2, 'y'], [3, 'z']]);
 for (var x of a) { // 遍历Array
@@ -754,30 +699,27 @@ for (var x of m) { // 遍历Map
  // 遍历 Map 时，由于Map是二维数组，所以 x 是一个键值对
  alert(x[0] + '=' + x[1]);
 }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;for ... of&lt;/code&gt; 与 &lt;code class=&quot;highlighter-rouge&quot;&gt;for ... in&lt;/code&gt; 的区别：
 &lt;code class=&quot;highlighter-rouge&quot;&gt;for ... in&lt;/code&gt; 遍历对象的属性（也包括数组的索引），当我们手动给 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 添加额外属性时，会与 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 的 &lt;code class=&quot;highlighter-rouge&quot;&gt;length&lt;/code&gt; 属性发生冲突：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var a = ['A', 'B', 'C'];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var a = ['A', 'B', 'C'];
 a.name = 'Hello';
 for (var x in a) {
  alert(x);   // '0', '1', '2', 'name'
 }
 a.length;       // 3
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;for ... of&lt;/code&gt; 不会有这种情况发生，它只循环集合本身的元素，如：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var a = ['A', 'B', 'C'];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var a = ['A', 'B', 'C'];
 a.name = 'Hello';
 for (var x of a) {
  alert(x); // 'A', 'B', 'C'
 }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;更好的方式是直接使用 &lt;code class=&quot;highlighter-rouge&quot;&gt;iterator&lt;/code&gt; 本身的 &lt;code class=&quot;highlighter-rouge&quot;&gt;forEach&lt;/code&gt; 方法，它接收一个函数，每次迭代自动回调这个函数：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // Array
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // Array
  var a = ['A', 'B', 'C'];
  a.forEach(function (element, index, array) {
      // element: 指向当前元素的值
@@ -798,8 +740,7 @@ for (var x of a) {
  m.forEach(function (value, key, map) {
      alert(value);
  });
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -811,36 +752,34 @@ for (var x of a) {
   &lt;li&gt;函数定义方法有两种,且两种定义完全等价
     &lt;ol&gt;
       &lt;li&gt;函数定义方法一：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function abs(x) {
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function abs(x) {
      if (x &amp;gt;= 0) {
          return x;
      } else {
          return -x;
      }
  }
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;说明：&lt;/p&gt;
         &lt;ul&gt;
           &lt;li&gt;function 指出这是一个函数定义&lt;/li&gt;
           &lt;li&gt;abs 是函数名&lt;/li&gt;
           &lt;li&gt;(x) 是参数列表，多个参数以 &lt;code class=&quot;highlighter-rouge&quot;&gt;,&lt;/code&gt; 隔开&lt;/li&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt; 内是代码体，可以包含若干语句，甚至没有任何语句&lt;/li&gt;
+          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;{...}&lt;/code&gt; 内是代码体，可以包含若干语句，甚至没有任何语句&lt;/li&gt;
           &lt;li&gt;函数体内部的语句在执行时，一旦执行到 &lt;code class=&quot;highlighter-rouge&quot;&gt;return&lt;/code&gt; 时，函数就执行完毕，并将结果返回.&lt;/li&gt;
           &lt;li&gt;如果没有 &lt;code class=&quot;highlighter-rouge&quot;&gt;return&lt;/code&gt; 语句，函数执行完毕后也会返回结果，只是结果为 &lt;code class=&quot;highlighter-rouge&quot;&gt;undefined&lt;/code&gt;。&lt;/li&gt;
         &lt;/ul&gt;
       &lt;/li&gt;
       &lt;li&gt;函数定义方法二：
  由于 javascript 中函数也是一个对象，所以可以进行如下定义：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var abs = function (x) {
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var abs = function (x) {
      if (x &amp;gt;= 0) {
          return x;
      } else {
          return -x;
      }
  };
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;：需要在函数体末尾加一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;;&lt;/code&gt;，表示赋值语句结束。&lt;/p&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
@@ -849,17 +788,15 @@ for (var x of a) {
     &lt;ol&gt;
       &lt;li&gt;按顺序传入参数即可。&lt;/li&gt;
       &lt;li&gt;JavaScript允许传入任意个参数而不影响调用，因此传入的参数比定义的参数多也没有问题，虽然函数内部并不需要这些参数:
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; abs(10, 'blablabla');           // 返回10
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; abs(10, 'blablabla');           // 返回10
  abs(-9, 'haha', 'hehe', null);  // 返回9
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;传入的参数比定义的少也没有问题:
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; abs();      // 返回NaN
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; abs();      // 返回NaN
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;因此要对函数进行检查：&lt;/p&gt;
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function abs(x) {
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function abs(x) {
      if (typeof x !== 'number') {
          throw 'Not a number';
      }
@@ -869,13 +806,12 @@ for (var x of a) {
          return -x;
      }
  }
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;arguments 是一个关键字，只在函数内部起作用，且永远指向当前函数的调用者传入的所有参数列表，它似乎于 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;，但并不是 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;，
  利用 arguments 可以获得调用者传入的所有参数，即使函数不定义任何函数，也可以拿到所有参数的值：
  因此常用来判断参数的个数
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // arguments 类似于数组，具有length属性，通过 [] 索引参数
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // arguments 类似于数组，具有length属性，通过 [] 索引参数
  function foo(x) {
      alert(x);                   // 10
      for (var i=0; i&amp;lt;arguments.length; i++) {
@@ -904,12 +840,11 @@ for (var x of a) {
          b = null;   // b变为默认值
      }
  }
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
       &lt;li&gt;rest 参数
  由于JavaScript函数允许接收任意个参数，于是我们就不得不用arguments来获取所有参数:
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function foo(a, b) {
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function foo(a, b) {
      var i, rest = [];
      if (arguments.length &amp;gt; 2) {
          for (i = 2; i&amp;lt;arguments.length; i++) {
@@ -920,8 +855,7 @@ for (var x of a) {
      console.log('b = ' + b);
      console.log(rest);
  }
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
 
@@ -935,7 +869,7 @@ for (var x of a) {
          console.log(rest);
      }&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; foo(1, 2, 3, 4, 5);
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; foo(1, 2, 3, 4, 5);
  // 结果:
  // a = 1
  // b = 2
@@ -972,8 +906,7 @@ for (var x of a) {
      };
  }
  ```
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -981,18 +914,17 @@ for (var x of a) {
 &lt;ol&gt;
   &lt;li&gt;在JavaScript中，用 &lt;code class=&quot;highlighter-rouge&quot;&gt;var&lt;/code&gt; 申明的变量实际上是有作用域的。&lt;/li&gt;
   &lt;li&gt;如果一个变量在函数体内部申明，则该变量的作用域为整个函数体，在函数体外不可引用该变量
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
  function foo() {
      var x = 1;
      x = x + 1;
  }
  x = x + 2; // ReferenceError! 无法在函数体外引用变量x
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;不同函数内部的同名变量互相独立，互不影响&lt;/li&gt;
   &lt;li&gt;JavaScript的函数可以嵌套，此时，内部函数可以访问外部函数定义的变量，反过来则不行
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
  function foo() {
      var x = 1;
      function bar() {
@@ -1000,11 +932,10 @@ for (var x of a) {
      }
      var z = y + 1;      // ReferenceError! foo不可以访问bar的变量y!
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;内部函数和外部函数的变量名重名时，内部函数的变量将“屏蔽”外部函数的变量。
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  function foo() {
      var x = 1;
@@ -1015,12 +946,11 @@ for (var x of a) {
      alert('x in foo() = ' + x);         // 1
      bar();
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;变量声明提升
 JavaScript的函数定义有个特点，它会先扫描整个函数体的语句，把所有申明的变量“提升”到函数顶部,如：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  function foo() {
      var x = 'Hello, ' + y;
@@ -1035,22 +965,20 @@ JavaScript的函数定义有个特点，它会先扫描整个函数体的语句�
      alert(x);
      y = 'Bob';
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;全局作用域
 不在任何函数内定义的变量就具有全局作用域。实际上，JavaScript默认有一个全局对象 &lt;code class=&quot;highlighter-rouge&quot;&gt;window&lt;/code&gt;，全局作用域的变量实际上被绑定到 &lt;code class=&quot;highlighter-rouge&quot;&gt;window&lt;/code&gt; 的一个属性
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  var course = 'Learn JavaScript';
  alert(course);          // 'Learn JavaScript'
  alert(window.course);   // 'Learn JavaScript'
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;由于函数定义有两种方式，以变量方式 &lt;code class=&quot;highlighter-rouge&quot;&gt;var foo = function () {}&lt;/code&gt; 定义的函数实际上也是一个全局变量，
 因此，顶层函数的定义也被视为一个全局变量，并绑定到 &lt;code class=&quot;highlighter-rouge&quot;&gt;window&lt;/code&gt; 对象
 我们每次直接调用的 &lt;code class=&quot;highlighter-rouge&quot;&gt;alert()&lt;/code&gt; 函数其实也是 &lt;code class=&quot;highlighter-rouge&quot;&gt;window&lt;/code&gt; 的一个变量&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  function foo() {
      alert('foo');
@@ -1058,15 +986,14 @@ JavaScript的函数定义有个特点，它会先扫描整个函数体的语句�
 
  foo();          // 直接调用foo()
  window.foo();   // 通过window.foo()调用
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;这说明JavaScript实际上只有一个全局作用域。任何变量（函数也视为变量），如果没有在当前函数作用域中找到，
 就会继续往上查找，最后如果在全局作用域中也没有找到，则报ReferenceError错误。&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;名字空间
 全局变量会绑定到 &lt;code class=&quot;highlighter-rouge&quot;&gt;window&lt;/code&gt; 上，不同的JavaScript文件如果使用了相同的全局变量，或者定义了相同名字的顶层函数，都会造成命名冲突，并且很难被发现。
 减少冲突的一个方法是把自己的所有变量和函数全部绑定到一个全局变量中
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // 唯一的全局变量MYAPP:
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // 唯一的全局变量MYAPP:
  var MYAPP = {};
 
  // 其他变量:
@@ -1077,14 +1004,13 @@ JavaScript的函数定义有个特点，它会先扫描整个函数体的语句�
  MYAPP.foo = function () {
      return 'foo';
  };
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;把自己的代码全部放入唯一的名字空间 &lt;code class=&quot;highlighter-rouge&quot;&gt;MYAPP&lt;/code&gt; 中，会大大减少全局变量冲突的可能&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;局域作用域
 由于JavaScript的变量作用域实际上是函数内部，我们在 &lt;code class=&quot;highlighter-rouge&quot;&gt;for&lt;/code&gt; 循环等语句块中是无法定义具有局部作用域的变量的
 为了解决块级作用域，ES6引入了新的关键字 &lt;code class=&quot;highlighter-rouge&quot;&gt;let&lt;/code&gt;，用 &lt;code class=&quot;highlighter-rouge&quot;&gt;let&lt;/code&gt; 替代 &lt;code class=&quot;highlighter-rouge&quot;&gt;var&lt;/code&gt; 可以申明一个块级作用域的变量
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  function foo() {
      var sum = 0;
@@ -1101,24 +1027,21 @@ JavaScript的函数定义有个特点，它会先扫描整个函数体的语句�
      }
      i += 1; // SyntaxError
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;常量
 由于 &lt;code class=&quot;highlighter-rouge&quot;&gt;var&lt;/code&gt; 和 &lt;code class=&quot;highlighter-rouge&quot;&gt;let&lt;/code&gt; 申明的是变量，如果要申明一个常量，在ES6之前是不行的，我们通常用全部大写的变量来表示“这是一个常量，不要修改它的值”
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var PI = 3.14;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var PI = 3.14;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;ES6标准引入了新的关键字 &lt;code class=&quot;highlighter-rouge&quot;&gt;const&lt;/code&gt; 来定义常量，&lt;code class=&quot;highlighter-rouge&quot;&gt;const&lt;/code&gt; 与 &lt;code class=&quot;highlighter-rouge&quot;&gt;let&lt;/code&gt; 都具有块级作用域&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;const PI = 3.14;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;const PI = 3.14;
 PI = 3;         // 某些浏览器不报错，但是无效果！
 PI;             // 3.14
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;h3 id=&quot;方法&quot;&gt;方法&lt;/h3&gt;
     &lt;p&gt;在一个对象中绑定函数，称为这个对象的方法.
 给xiaoming绑定一个函数，就可以做更多的事情,如：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var xiaoming = {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var xiaoming = {
     name: '小明',
     birth: 1990,
     age: function () {
@@ -1129,13 +1052,12 @@ PI;             // 3.14
 
 xiaoming.age;   // function xiaoming.age()
 xiaoming.age(); // 今年调用是25,明年调用就变成26了
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;this 关键字
 在一个方法内部，&lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 是一个特殊变量，它始终指向当前对象,JavaScript的函数内部如果调用了this，那么这个this的指向将 &lt;strong&gt;视情况而定&lt;/strong&gt;！
 这个是 javascript 的大坑,而且，即使用 obj.xxx()的方式赋值给其它全局对象，也会出错。
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function getAge() {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function getAge() {
      var y = new Date().getFullYear();
      // 这里的 this 指向的对象将视情况而定
      return y - this.birth;
@@ -1153,12 +1075,11 @@ xiaoming.age(); // 今年调用是25,明年调用就变成26了
  getAge();               // NaN
  var fn = xiaoming.age;  // 先拿到xiaoming的age函数
  fn();                   // NaN
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;所以， &lt;strong&gt;要保证 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 指向正确，必须用 &lt;code class=&quot;highlighter-rouge&quot;&gt;obj.xxx()&lt;/code&gt; 的形式调用&lt;/strong&gt;
 由于这是一个巨大的设计错误，要想纠正可没那么简单。ECMA决定，在strict模式下让函数的 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 指向 &lt;code class=&quot;highlighter-rouge&quot;&gt;undefined&lt;/code&gt;，因此，在strict模式下，你会得到一个错误：
 这个决定只是让错误及时暴露出来，并没有解决 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 应该指向的正确位置&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  var xiaoming = {
  name: '小明',
@@ -1171,10 +1092,9 @@ xiaoming.age(); // 今年调用是25,明年调用就变成26了
 
  var fn = xiaoming.age;
  fn();           // Uncaught TypeError: Cannot read property 'birth' of undefined
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;而且，在方法重构时，也会产生错误：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  var xiaoming = {
      name: '小明',
@@ -1189,12 +1109,11 @@ xiaoming.age(); // 今年调用是25,明年调用就变成26了
  };
 
  xiaoming.age(); // Uncaught TypeError: Cannot read property 'birth' of undefined
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;因为 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 指针只在 &lt;code class=&quot;highlighter-rouge&quot;&gt;age&lt;/code&gt; 方法的函数内指向 &lt;code class=&quot;highlighter-rouge&quot;&gt;xiaoming&lt;/code&gt;，在函数内部定义的函数，
 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 又指向&lt;code class=&quot;highlighter-rouge&quot;&gt;undefined&lt;/code&gt;了！（在非strict模式下，它重新指向全局对象 &lt;code class=&quot;highlighter-rouge&quot;&gt;window&lt;/code&gt;！）
 解决办法为用一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;that&lt;/code&gt; 变量先捕获 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt;：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  var xiaoming = {
      name: '小明',
@@ -1210,8 +1129,7 @@ xiaoming.age(); // 今年调用是25,明年调用就变成26了
  };
 
  xiaoming.age();                     // 25
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;apply() 和 call()
 虽然在一个独立的函数调用中，根据是否是strict模式，&lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 指向 &lt;code class=&quot;highlighter-rouge&quot;&gt;undefined&lt;/code&gt; 或 &lt;code class=&quot;highlighter-rouge&quot;&gt;window&lt;/code&gt;，不过，我们还是可以控制 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 的指向的！&lt;/li&gt;
@@ -1225,7 +1143,7 @@ xiaoming.age(); // 今年调用是25,明年调用就变成26了
         return y - this.birth;
     }&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var xiaoming = {
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var xiaoming = {
     name: '小明',
     birth: 1990,
     age: getAge
@@ -1256,8 +1174,7 @@ parseInt('20');
 parseInt('30');
 count; // 3
 ```
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h3 id=&quot;高阶函数&quot;&gt;高阶函数&lt;/h3&gt;
 &lt;p&gt;高阶函数英文叫Higher-order function。
@@ -1272,31 +1189,28 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
 &lt;p&gt;map/reduce的概念不再介绍，可以看Google的论文&lt;a href=&quot;https://research.google.com/archive/mapreduce.html&quot;&gt;MapReduce: Simplified Data Processing on Large Clusters&lt;/a&gt;&lt;/p&gt;
 &lt;ol&gt;
   &lt;li&gt;map()，定义在 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 内部，可以调用 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 的 &lt;code class=&quot;highlighter-rouge&quot;&gt;map()&lt;/code&gt; 方法，传入自己的函数，这个函数会对 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 的每个元素执行该函数，从而得到一个新的 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt;：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function pow(x) {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function pow(x) {
      return x * x;
  }
 
  var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
  // 注意 map 传入的参数是函数对象本身，是一个函数。
  arr.map(pow); // [1, 4, 9, 16, 25, 36, 49, 64, 81]
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;map()&lt;/code&gt; 作为高阶函数，实际上是把运算规则抽象了，例如还可以进行如下调用：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
  arr.map(String); // ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;reduce(), 同样定义在 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 内部，接受一个函数，这个函数有两个参数，然后 &lt;code class=&quot;highlighter-rouge&quot;&gt;reduce&lt;/code&gt; 会对 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 内的元素，从前到后，依次调用这个函数，如下：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; [x1, x2, x3, x4].reduce(f) = f(f(f(x1, x2), x3), x4)
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; [x1, x2, x3, x4].reduce(f) = f(f(f(x1, x2), x3), x4)
 
  // 比如求和函数可以这样实现：
  var arr = [1, 3, 5, 7, 9];
  arr.reduce(function (x, y) {
      return x + y;
  }); // 25
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -1305,25 +1219,23 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
   &lt;li&gt;filter(), 用于把 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 的某些元素过滤掉，然后返回剩下的元素。
 与 &lt;code class=&quot;highlighter-rouge&quot;&gt;map()&lt;/code&gt; 类似，&lt;code class=&quot;highlighter-rouge&quot;&gt;filter()&lt;/code&gt; 也接收一个函数，但 &lt;code class=&quot;highlighter-rouge&quot;&gt;filter()&lt;/code&gt; 会把传入的函数依次作用于每个元素，然后根据返回值是 &lt;code class=&quot;highlighter-rouge&quot;&gt;true&lt;/code&gt; 还是 &lt;code class=&quot;highlighter-rouge&quot;&gt;false&lt;/code&gt; 决定是否保留元素。
 例如，在一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 中，删掉偶数，只保留奇数，可以这么写：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2, 4, 5, 6, 9, 10, 15];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = [1, 2, 4, 5, 6, 9, 10, 15];
  var r = arr.filter(function (x) {
      return x % 2 !== 0;
  });
  r;              // [1, 5, 9, 15]
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;回调函数
 &lt;code class=&quot;highlighter-rouge&quot;&gt;filter()&lt;/code&gt; 接收的回调函数，其实可以有多个参数。通常我们仅使用第一个参数，表示 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 的某个元素。回调函数还可以接收另外两个参数，表示元素的位置和数组本身
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = ['A', 'B', 'C'];
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var arr = ['A', 'B', 'C'];
  var r = arr.filter(function (element, index, self) {
      console.log(element);   // 依次打印'A', 'B', 'C'
      console.log(index);     // 依次打印0, 1, 2
      console.log(self);      // self就是变量arr
      return true;
  });
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -1357,17 +1269,16 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
 &lt;ol&gt;
   &lt;li&gt;函数作为返回值：高阶函数除了可以接受函数作为参数外，还可以把函数作为结果值返回。
 通常情况下，求和的函数是这样定义的:
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function sum(arr) {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function sum(arr) {
      return arr.reduce(function (x, y) {
          return x + y;
      });
  }
 
  sum([1, 2, 3, 4, 5]); // 15
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;但是，如果不需要立刻求和，而是在后面的代码中，根据需要再计算怎么办？解决办法是：不返回求和的结果，而是返回求和的函数！&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function lazy_sum(arr) {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function lazy_sum(arr) {
      var sum = function () {
          return arr.reduce(function (x, y) {
              return x + y;
@@ -1376,29 +1287,25 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
      // 这里 sum 是一个函数！
      return sum;
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;当我们调用 &lt;code class=&quot;highlighter-rouge&quot;&gt;lazy_sum()&lt;/code&gt; 时，返回的并不是求和结果，而是求和函数：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var f = lazy_sum([1, 2, 3, 4, 5]); // 这里的 f 实际上是函数 sum() 的一个对象
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var f = lazy_sum([1, 2, 3, 4, 5]); // 这里的 f 实际上是函数 sum() 的一个对象
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;调用函数f时，才真正计算求和的结果：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; f(); // 15
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; f(); // 15
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;用例子说明“闭包”的定义：在上面的例子中，函数 &lt;code class=&quot;highlighter-rouge&quot;&gt;lazy_sum()&lt;/code&gt; 内部定义了函数 &lt;code class=&quot;highlighter-rouge&quot;&gt;sum()&lt;/code&gt;, 并且，内部的函数 &lt;code class=&quot;highlighter-rouge&quot;&gt;sum()&lt;/code&gt; 可以引用外部函数的参数和局部变量，
 当 &lt;code class=&quot;highlighter-rouge&quot;&gt;lazy_sum()&lt;/code&gt; 返回函数 &lt;code class=&quot;highlighter-rouge&quot;&gt;sum()&lt;/code&gt; 时，相关的参数和变量都保存在返回的函数中，这种称为 &lt;strong&gt;“闭包”&lt;/strong&gt; 的程序结构有极大的能力。
 请再注意一点，当我们调用 &lt;code class=&quot;highlighter-rouge&quot;&gt;lazy_sum()&lt;/code&gt; 时，每次调用都会返回一个新的函数，即使传入相同的参数：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var f1 = lazy_sum([1, 2, 3, 4, 5]);
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var f1 = lazy_sum([1, 2, 3, 4, 5]);
  var f2 = lazy_sum([1, 2, 3, 4, 5]);
  f1 === f2;          // false
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;且 &lt;code class=&quot;highlighter-rouge&quot;&gt;f1&lt;/code&gt; 与 &lt;code class=&quot;highlighter-rouge&quot;&gt;f2&lt;/code&gt; 的调用结果互不影响，因为是两个不同的对象。&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;闭包：返回的函数在其定义内部引用了局部变量 &lt;code class=&quot;highlighter-rouge&quot;&gt;arr&lt;/code&gt;，所以，当一个函数返回了一个函数后，其内部的局部变量还被新函数引用
 &lt;strong&gt;注意&lt;/strong&gt;:返回的函数并没有立刻执行，而是直到调用了 &lt;code class=&quot;highlighter-rouge&quot;&gt;f()&lt;/code&gt; 才执行。我们来看一个例子：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function count() {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function count() {
      var arr = [];
      for (var i=1; i&amp;lt;=3; i++) {
          arr.push(function () {
@@ -1412,19 +1319,17 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
  var f1 = results[0];
  var f2 = results[1];
  var f3 = results[2];
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;上面的例子中，每次循环，都创建了一个新的函数，然后，把创建的3个函数都添加到一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;Array&lt;/code&gt; 中返回
 但调用 &lt;code class=&quot;highlighter-rouge&quot;&gt;f1() f2() 和 f3()&lt;/code&gt; 的结果不是 &lt;code class=&quot;highlighter-rouge&quot;&gt;1, 4, 9&lt;/code&gt;,如：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; f1(); // 16
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; f1(); // 16
  f2(); // 16
  f3(); // 16
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;原因就在于返回的函数引用了变量 &lt;code class=&quot;highlighter-rouge&quot;&gt;i&lt;/code&gt;，但它并非立刻执行。等到3个函数都返回时，它们所引用的变量 &lt;code class=&quot;highlighter-rouge&quot;&gt;i&lt;/code&gt; 已经变成了4，因此最终结果为16。
 &lt;strong&gt;特别注意&lt;/strong&gt;：返回函数时不要引用任何循环变量，或者后续会发生变化的变量！！！
 如果一定要引用循环变量怎么办？方法是:再创建一个函数，用该函数的参数绑定循环变量当前的值，无论该循环变量后续如何更改，已绑定到函数参数的值不变：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function count() {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function count() {
      var arr = [];
      for (var i=1; i&amp;lt;=3; i++) {
          // 里面的 function 定义好之后就直接传入参数 i 进行调用了
@@ -1445,28 +1350,24 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
  f1(); // 1
  f2(); // 4
  f3(); // 9
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;补充：创建一个匿名函数并立刻执行的语法是：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; (function (x) {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; (function (x) {
      return x * x;
  })(3); // 9
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;理论上讲，创建一个匿名函数并立刻执行可以这样写：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function (x) { return x * x } (3);
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function (x) { return x * x } (3);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;但由于JavaScript语法解析的问题，会报SyntaxError错误，因此需要用括号把整个函数定义括起来：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; (function (x) { return x * x }) (3);
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; (function (x) { return x * x }) (3);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;闭包的功能：
     &lt;ol&gt;
       &lt;li&gt;上面讲到的 延迟计算&lt;/li&gt;
       &lt;li&gt;封装私有变量
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; 'use strict';
 
  function create_counter(initial) {
      var x = initial || 0;
@@ -1487,8 +1388,7 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
  c2.inc(); // 11
  c2.inc(); // 12
  c2.inc(); // 13
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
         &lt;p&gt;在返回的对象中，实现了一个闭包，这个闭包携带了私有变量 &lt;code class=&quot;highlighter-rouge&quot;&gt;x&lt;/code&gt;，并且，代码无法从外部访问到该变量。
  换句话说，闭包就是携带状态的函数，并且它的状态可以完全对外部隐藏。&lt;/p&gt;
         &lt;h3 id=&quot;箭头函数&quot;&gt;箭头函数&lt;/h3&gt;
@@ -1530,7 +1430,7 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
   &lt;/li&gt;
   &lt;li&gt;this ，箭头函数与匿名函数的区别：箭头函数内部的 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 是词法作用域，由上下文确定,说简单一些，箭头函数里的 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 的作用域很明确。
 上面提到过，这种情况下，this的作用域容易出问题：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var obj = {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var obj = {
      birth: 1990,
      getAge: function () {
          var b = this.birth; // 1990
@@ -1540,10 +1440,9 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
          return fn();
      }
  };
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;但箭头函数里，不会有这样的问题，写法如下：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var obj = {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var obj = {
      birth: 1990,
      getAge: function () {
          var b = this.birth; // 1990
@@ -1552,10 +1451,9 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
      }
  };
  obj.getAge(); // 25
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;由于 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 在箭头函数中已经按照词法作用域绑定了，所以，用 &lt;code class=&quot;highlighter-rouge&quot;&gt;call()&lt;/code&gt; 或者 &lt;code class=&quot;highlighter-rouge&quot;&gt;apply()&lt;/code&gt; 调用箭头函数时，无法对 &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; 进行绑定，即传入的第一个参数被忽略&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var obj = {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var obj = {
      birth: 1990,
      getAge: function (year) {
          var b = this.birth; // 1990
@@ -1565,8 +1463,7 @@ JavaScript的函数其实都指向某个变量。既然变量可以指向函数�
      }
  };
  obj.getAge(2015); // 25
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -1577,17 +1474,16 @@ javascript 的 generator 借鉴了 Python 的生成器概念和语法。&lt;/p&g
   &lt;li&gt;生成器概念
 函数一般是传入一个参数，返回一个计算结果。在函数执行过程中，如果没有遇到 &lt;code class=&quot;highlighter-rouge&quot;&gt;return&lt;/code&gt; 语句，函数会继续执行到函数结尾或遇到 &lt;code class=&quot;highlighter-rouge&quot;&gt;return&lt;/code&gt;。
 generator 与 函数很像，定义如下：
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function* foo(x) {
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; function* foo(x) {
      // 注意 yield 的用法
      yield x + 1;
      yield x + 2;
      return x + 3;
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;generator 与函数的区别在于：generator 通过 &lt;code class=&quot;highlighter-rouge&quot;&gt;function*&lt;/code&gt; 定义， &lt;strong&gt;注意&lt;/strong&gt;：这里的 &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt; 不能省略，且除了 &lt;code class=&quot;highlighter-rouge&quot;&gt;return&lt;/code&gt; 外，还有 &lt;code class=&quot;highlighter-rouge&quot;&gt;yield&lt;/code&gt; &lt;strong&gt;多次返回&lt;/strong&gt;。
 对 &lt;strong&gt;多次返回&lt;/strong&gt; 的解释如下：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // 正常的斐波那契数列生成算法
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // 正常的斐波那契数列生成算法
  function fib(max) {
      var
          t,
@@ -1625,35 +1521,31 @@ generator 与 函数很像，定义如下：
      }
      return a;
  }
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;直接调用上面的 generator 写法的 &lt;code class=&quot;highlighter-rouge&quot;&gt;fib()&lt;/code&gt; 函数，如下所示：&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; fib(5); // fib {[[GeneratorStatus]]: &quot;suspended&quot;, [[GeneratorReceiver]]: Window}
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; fib(5); // fib {[[GeneratorStatus]]: &quot;suspended&quot;, [[GeneratorReceiver]]: Window}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;p&gt;这表明，直接调用 generator 与直接调用函数不同，直接调用 generator 会返回一个 generator 对象，但不会立刻执行它。
 调用 generator 的方法有两种：&lt;/p&gt;
     &lt;ol&gt;
       &lt;li&gt;调用 generator 的 &lt;code class=&quot;highlighter-rouge&quot;&gt;next()&lt;/code&gt; 方法：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var f = fib(5);
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; var f = fib(5);
  f.next(); // {value: 0, done: false}
  f.next(); // {value: 1, done: false}
  f.next(); // {value: 1, done: false}
  f.next(); // {value: 2, done: false}
  f.next(); // {value: 3, done: true}
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
-        &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;next()&lt;/code&gt; 方法会执行generator的代码，然后，每次遇到 &lt;code class=&quot;highlighter-rouge&quot;&gt;yield x&lt;/code&gt;;就返回一个对象 &lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;value:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;x,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;done:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;true/false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;，
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+        &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;next()&lt;/code&gt; 方法会执行generator的代码，然后，每次遇到 &lt;code class=&quot;highlighter-rouge&quot;&gt;yield x&lt;/code&gt;;就返回一个对象 &lt;code class=&quot;highlighter-rouge&quot;&gt;{value: x, done: true/false}&lt;/code&gt;，
  然后“暂停”。返回的 &lt;code class=&quot;highlighter-rouge&quot;&gt;value&lt;/code&gt; 就是 &lt;code class=&quot;highlighter-rouge&quot;&gt;yield&lt;/code&gt; 的返回值，&lt;code class=&quot;highlighter-rouge&quot;&gt;done&lt;/code&gt; 表示这个generator是否已经执行结束了。
  如果 &lt;code class=&quot;highlighter-rouge&quot;&gt;done&lt;/code&gt; 为 &lt;code class=&quot;highlighter-rouge&quot;&gt;true&lt;/code&gt;，则 &lt;code class=&quot;highlighter-rouge&quot;&gt;value&lt;/code&gt; 就是 &lt;code class=&quot;highlighter-rouge&quot;&gt;return&lt;/code&gt;的返回值。
  执行到 &lt;code class=&quot;highlighter-rouge&quot;&gt;none&lt;/code&gt; 为 &lt;code class=&quot;highlighter-rouge&quot;&gt;true&lt;/code&gt; 时，这个generator对象就已经全部执行完毕，不要再继续调用 &lt;code class=&quot;highlighter-rouge&quot;&gt;next()&lt;/code&gt; 了。&lt;/p&gt;
       &lt;/li&gt;
       &lt;li&gt;通过 &lt;code class=&quot;highlighter-rouge&quot;&gt;for ... of&lt;/code&gt; 循环迭代 generator 对象，这种方式不需要我们自己判断 &lt;code class=&quot;highlighter-rouge&quot;&gt;done&lt;/code&gt;：
-        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; for (var x of fib(5)) {
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; for (var x of fib(5)) {
      console.log(x); // 依次输出0, 1, 1, 2, 3
  }
-&lt;/code&gt;&lt;/pre&gt;
-        &lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
     &lt;/ol&gt;
   &lt;/li&gt;

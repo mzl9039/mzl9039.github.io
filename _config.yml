@@ -4,7 +4,7 @@ SEOTitle: mzl9039's Blog
 header-img: styles/img/home-bg.jpg
 email: mzl9039@163.com
 description: "生活和学习，现实与梦想，真实与想象 | mzl9039，好奇地看着这个世界，everything is on the way | 这里是 @mzl9039 的个人博客，享受生活，享受学习，想用技术让生活更有趣一些。"
-keyword: "mzl, mzl9039, 莫致良, @mzl9039, mzl9039 Blog, 博客, 个人网站, 小鱼, 空气中的鱼"
+keyword: "mzl, mzl9039, 莫致良, @mzl9039, mzl9039 Blog, 博客, 个人网站"
 url: "https://mzl9039.github.io"              	# your host, for absolute URL
 baseurl: ""                                  	# for example, '/blog' if your blog hosted on 'host/blog'
 
@@ -38,7 +38,7 @@ unpublished: false
 # Plugins
 # from PR#40, to support local preview for Jekyll 3.0
 whitelist: []
-gems:      [jekyll-paginate]
+plugins:      [jekyll-paginate]
 
 # Conversion
 markdown:    kramdown

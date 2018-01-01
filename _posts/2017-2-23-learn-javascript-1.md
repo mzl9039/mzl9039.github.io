@@ -4,7 +4,6 @@ title:      "学习javascript"
 subtitle:   "Hello javascript"
 date:       2017-2-23 08:38:00
 author:     mzl
-header-img: "styles/img/javascript.jpg"
 catalog:    true
 tags:
     - javascript

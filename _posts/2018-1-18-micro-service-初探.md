@@ -1,18 +1,15 @@
 ---
 layout:     post
 title:      "微服务初探"
-subtitle:   "Spring Cloud/Dubbo"
+subtitle:   "微服务相关知识学习"
 date:       2018-1-18 13:50:59
 author:     mzl
 catalog:    true
 tags:
-    - Spring Cloud 
-    - Dubbo
     - micro service
     - API网关
     - API Gateway
     - Microservices
-    - 
 ---
 
 {:toc}
@@ -279,10 +276,6 @@ Netflix Eureka 是服务注册表的上好案例，为注册和请求服务实�
     * 事件源的另一大优势在于业务逻辑由松耦合的、事件交换的业务实体构成，便于从单体应用向微服务架构迁移。
 * 缺点：
     * 采用了不同或不熟悉的编程风格，会有学习曲线。事件存储只直接支持通过主键查询业务实体，用户还需要使用 Command Query Responsibility Segregation (CQRS) 来完成查询。
-
-### 微服务治理方案
-#### Spring boot / Spring Cloud
-#### Dubbo
 
 ## 引用的内容
 1. [放弃Dubbo，选择最流行的Spring Cloud微服务架构实践与经验总结](http://developer.51cto.com/art/201710/554633.htm)

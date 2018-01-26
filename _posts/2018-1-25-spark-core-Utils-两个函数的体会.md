@@ -12,7 +12,7 @@ tags:
     - Absolute
 ---
 
-[:toc]
+{:toc}
 # 在看Spark DiskBlockManager的时候，涉及了Utils里的两个方法 chmod700 和 createDirectory，由于以前对 java 不太熟悉，故写一下体会
 ## chmod700
 ```scala

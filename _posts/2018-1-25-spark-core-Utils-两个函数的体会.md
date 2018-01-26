@@ -13,7 +13,9 @@ tags:
 ---
 
 {:toc}
-# 在看Spark DiskBlockManager的时候，涉及了Utils里的两个方法 chmod700 和 createDirectory，由于以前对 java 不太熟悉，故写一下体会
+# 体会
+
+在看Spark DiskBlockManager的时候，涉及了Utils里的两个方法 chmod700 和 createDirectory，由于以前对 java 不太熟悉，故写一下体会
 ## chmod700
 
 java.io 包的 File 类的方法 setReadable/setWritable/setExecutable 三个方法各有同名方法，以 setReadable 为例说明：

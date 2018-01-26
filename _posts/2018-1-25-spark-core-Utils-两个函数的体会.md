@@ -47,8 +47,8 @@ java.io 包的 File 类的方法 setReadable/setWritable/setExecutable 三个方
 另外，注意如果要创建的目录 dir 已经存在（可能性很低，因为使用了UUID）, 则不再创建目录，多次重试都存在，则返回
 目录的标准路径
 这里需要注意 File 类的 Canonical 与 Absolute 这两个词的区别：
-    * Canonical 用解析定义 File 时用的 . 或 .. ，解析为正常的路径返回；
-    * Absolute 则不解析定义 File 时的 . 或 .. ，而是带着 . 或 .. 返回。
+1. Canonical 用解析定义 File 时用的 . 或 .. ，解析为正常的路径返回；
+2. Absolute 则不解析定义 File 时的 . 或 .. ，而是带着 . 或 .. 返回。
    
 ```scala
   /**

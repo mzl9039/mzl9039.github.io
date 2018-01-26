@@ -18,9 +18,13 @@ tags:
 ```scala
   /**
     * JDK equivalent of `chmod 700 file`.
+    
     * 利用 JDK 的功能给文件赋权限为 700，即仅当前用户具有：读写执行权限，其它用户没有任何权限
+    
     * @param file the file whose permissions will be modified
+    
     * @return true if the permissions were successfully changed, false otherwise.
+    
     */
   def chmod700(file: File): Boolean = {
     // java.io 包的 File 类的方法 setReadable/setWritable/setExecutable 三个方法各有同名方法，以 setReadable 为例说明：
@@ -30,6 +34,7 @@ tags:
     // owneronly 为 true, 即权限只适用于所有者；为 false, 则权限适用于所有用户。但当文件系统不能区分时所有者读权限，读权限将适用于所有用户
     // 返回值：true 表示赋权限成功；否则赋权限失败。
     // 异常：SecurityException: 当安全管理器存在且其securityManager.checkwrite 方法执行对文件进行写访问时抛出
+    
     file.setReadable(false, false) &&
     file.setReadable(true, true) &&
     file.setWritable(false, false) &&

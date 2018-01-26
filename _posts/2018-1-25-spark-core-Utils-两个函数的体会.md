@@ -17,14 +17,10 @@ tags:
 ## chmod700
 ```scala
   /**
-    * JDK equivalent of `chmod 700 file`.
-    
-    * 利用 JDK 的功能给文件赋权限为 700，即仅当前用户具有：读写执行权限，其它用户没有任何权限
-    
-    * @param file the file whose permissions will be modified
-    
-    * @return true if the permissions were successfully changed, false otherwise.
-    
+    * JDK equivalent of `chmod 700 file`.  
+    * 利用 JDK 的功能给文件赋权限为 700，即仅当前用户具有：读写执行权限，其它用户没有任何权限    
+    * @param file the file whose permissions will be modified    
+    * @return true if the permissions were successfully changed, false otherwise.    
     */
   def chmod700(file: File): Boolean = {
     // java.io 包的 File 类的方法 setReadable/setWritable/setExecutable 三个方法各有同名方法，以 setReadable 为例说明：

@@ -15,13 +15,18 @@ DiskBlockManager 是用来创建和控制逻辑上的映射关系（逻辑上的
 一个 block 被映射为一个文件 File，这个文件的文件名由指定的 BlockId.name 指定。
 ```scala
 // 类的定义和类的属性成员
+
 private[spark] class DiskBlockManager(conf: SparkConf, deleteFilesOnStop: Boolean) extends Logging {
   // 从配置获取每个目录下的文件数
+
   private[spark] val subDirsPerLocalDir = conf.getInt("spark.diskStore.subDirectories", 64)
   
   // 根据配置创建本地目录 localDirs，这些目录为 spark.local.dir 的配置项的内容。然后在这些目录里，创建很多
+
   // 个子目录 subDirs，将来我们会把文件 hash 到这些子目录里（这是为了避免在 top level 有非常大的 inodes）
+
   // 疑问：这里的 inode 指的是硬盘的 inode? 不太明白，猜测是一个目录下有过多的文件时，会产生非常大的 inode
+
   /* Create one local directory for each path mentioned in spark.local.dir; then, inside this
    * directory, create multiple subdirectories that we will hash files into, in order to avoid
    * having really large inodes at the top level. */
@@ -31,9 +36,13 @@ private[spark] class DiskBlockManager(conf: SparkConf, deleteFilesOnStop: Boolea
     System.exit(ExecutorExitCode.DISK_STORE_FAILED_TO_CREATE_DIR)
   }
   // 上面注释中提到的子目录，子目录本身是不可变的，但子目录（作为一个数组）的每个数组项是可变的。
+
   // 每个数组项都被这个项 lock (后面的代码里使用了 synchronize)
+
   // The content of subDirs is immutable but the content of subDirs(i) is mutable. And the content
+
   // of subDirs(i) is protected by the lock of subDirs(i)
+
   private val subDirs = Array.fill(localDirs.length)(new Array[File](subDirsPerLocalDir))
 
   private val shutdownHook = addShutdownHook()
@@ -46,19 +55,28 @@ private[spark] class DiskBlockManager(conf: SparkConf, deleteFilesOnStop: Boolea
 ```scala
   /** Looks up a file by hashing it into one of our local subdirectories. */
   // 这个方法要和 ExternalShuffleBlockResolver 类里的 getFile 方法逻辑上保持一致.
+
   // 简单看了下，两个方法实现的是同样的功能，所以要保持一致。因为两个方法要保持相同的功能。
+
   // This method should be kept in sync with
+
   // org.apache.spark.network.shuffle.ExternalShuffleBlockResolver#getFile().
+
   def getFile(filename: String): File = {
     // Figure out which local directory it hashes to, and which subdirectory in that
+
     // 找到文件被 hash 到了哪个本地目录，以及它在哪个子目录
+
     // 这里的 hash 几乎为 filename 的 hashCode。而寻找本地目录和子目录的过程，都是 %
+
     val hash = Utils.nonNegativeHash(filename)
     val dirId = hash % localDirs.length
     val subDirId = (hash / localDirs.length) % subDirsPerLocalDir
 
     // Create the subdirectory if it doesn't already exist
+
     // 这里应了上面的话：每个数组项都被这个项 lock。另外，这里会在文件不存在的时候创建
+
     val subDir = subDirs(dirId).synchronized {
       val old = subDirs(dirId)(subDirId)
       if (old != null) {
@@ -89,12 +107,14 @@ private[spark] class DiskBlockManager(conf: SparkConf, deleteFilesOnStop: Boolea
   }
 
   /** List all the files currently stored on disk by the disk manager. */
-  // 注意这里的 dir.clone 的思想。
+  /** 注意这里的 dir.clone 的思想。*/
   def getAllFiles(): Seq[File] = {
     // Get all the files inside the array of array of directories
+
     subDirs.flatMap { dir =>
       dir.synchronized {
         // Copy the content of dir because it may be modified in other threads
+
         dir.clone()
       }
     }.filter(_ != null).flatMap { dir =>
@@ -146,6 +166,7 @@ private[spark] class DiskBlockManager(conf: SparkConf, deleteFilesOnStop: Boolea
     Utils.getConfiguredLocalDirs(conf).flatMap { rootDir =>
       try {
         // 本地目录，名称中带 blockmgr 的目录在这里创建
+
         val localDir = Utils.createDirectory(rootDir, "blockmgr")
         logInfo(s"Created local directory at $localDir")
         Some(localDir)
@@ -165,6 +186,7 @@ private[spark] class DiskBlockManager(conf: SparkConf, deleteFilesOnStop: Boolea
   private def addShutdownHook(): AnyRef = {
     logDebug("Adding shutdown hook") // force eager creation of logger
     // 通过添加 shutdownHook 调用 doStop
+
     ShutdownHookManager.addShutdownHook(ShutdownHookManager.TEMP_DIR_SHUTDOWN_PRIORITY + 1) { () =>
       logInfo("Shutdown hook called")
       DiskBlockManager.this.doStop()
@@ -174,7 +196,9 @@ private[spark] class DiskBlockManager(conf: SparkConf, deleteFilesOnStop: Boolea
   /** Cleanup local dirs and stop shuffle sender. */
   private[spark] def stop(): Unit = {
     // Remove the shutdown hook.  It causes memory leaks if we leave it around.
+
     // 先删除 shutdown hook，否则可能会有内存泄漏，对 hook 的分析要看 ShutdownHookManager
+
     try {
       ShutdownHookManager.removeShutdownHook(shutdownHook)
     } catch {
@@ -186,6 +210,7 @@ private[spark] class DiskBlockManager(conf: SparkConf, deleteFilesOnStop: Boolea
 
   private def doStop(): Unit = {
     // deleteFilesOnStop 是传进来的参数，在 BlockManager 中被初始化，跟 external shuffle service(配置项："spark.shuffle.service.enabled") 有关
+
     if (deleteFilesOnStop) {
       localDirs.foreach { localDir =>
         if (localDir.isDirectory && localDir.exists()) {

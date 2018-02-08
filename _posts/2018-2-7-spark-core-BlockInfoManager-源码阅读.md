@@ -18,23 +18,41 @@ tags:
 这个类的实例并不是线程安全的，由类 BlockInfoManager 中的锁保护。
 ```scala
 /**
+
  * 这个类有三个参数，有三个属性成员。
+
  * @param level the block's storage level. This is the requested persistence level, not the
+
  *              effective storage level of the block (i.e. if this is MEMORY_AND_DISK, then this
+
  *              does not imply that the block is actually resident in memory).
+
  *              是 block 的 storage level. 这是当前 block 在请求中的持久性级别，而不是真实的存储级别。
+
  *              （例如如果是 MEMORY_AND_DISK，那这个类并不会去确认当前 block 是否真的在内存中常驻）
+
  * @param classTag the block's [[ClassTag]], used to select the serializer. 
+
  *                 这个 block 的类标识，用于选择序列化类
+
  * @param tellMaster whether state changes for this block should be reported to the master. This
+
  *                   is true for most blocks, but is false for broadcast blocks.
+
  *                   这个 block 的状态变化时，是否通知 master. 对大多数 block 来说，这个值通常为 true，
+
  *                   但对广播 block，这个值为 false。
+
  * 成员属性有：_size, _readerCount, _writerTask
+
  *             _size: 表示 block 的大小
+
  *             _readerCount: 记录 block 被读锁锁的次数（每个读都会加 1 次）
+
  *             _writerTask: 拥有写锁的 task attempt 的 id。如果写锁被 non-task code 拥有，则为 NON_TASK_WRITER;
+
  *                          如果没有写锁，则为 NO_WRITER
+
  */
 private[storage] class BlockInfo(
     val level: StorageLevel,

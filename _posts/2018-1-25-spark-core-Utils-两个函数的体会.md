@@ -23,7 +23,7 @@ java.io 包的 File 类的方法 setReadable/setWritable/setExecutable 三个方
 2. public boolean setReadable(boolean readable, boolean owneronly)
 3. 参数说明：
     readable 为 true, 即设置为具有读权限；为 false, 则设置为不具有读权限
-    owneronly 为 true, 即权限只适用于所有者；为 false, 则权限适用于所有用户。但当文件系统不能区分时所有者读权限，读权限将适用于所有用户
+    owneronly 为 true, 则只有当前用户获得设置的权限；为 false, 则所有用户均可获取设置的权限。但当文件系统不能区分时所有者读权限，读权限将适用于所有用户
 4. 返回值：true 表示赋权限成功；否则赋权限失败。
 5. 异常：  SecurityException: 当安全管理器存在且其securityManager.checkwrite 方法执行对文件进行写访问时抛出
 

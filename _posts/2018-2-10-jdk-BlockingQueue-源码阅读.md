@@ -24,38 +24,11 @@ BlockingQueue 支持 4 种形式的方法，通过不同的方式，来处理当
 3. 阻塞当前线程直到操作成功
 4. 只阻塞给定的最大时间，如果超过时间仍不满足则放弃。
 
-<table BORDER CELLPADDING=3 CELLSPACING=1>
-<caption>Summary of BlockingQueue methods</caption>
- <tr>
-   <td></td>
-   <td ALIGN=CENTER><em>Throws exception</em></td>
-   <td ALIGN=CENTER><em>Special value</em></td>
-   <td ALIGN=CENTER><em>Blocks</em></td>
-   <td ALIGN=CENTER><em>Times out</em></td>
- </tr>
- <tr>
-   <td><b>Insert</b></td>
-   <td>add(e)</td>
-   <td>offer(e)</td>
-   <td>put(e)</td>
-   <td>offer(e, time, unit)</td>
- </tr>
- <tr>
-   <td><b>Remove</b></td>
-   <td>remove()</td>
-   <td>poll()</td>
-   <td>take()</td>
-   <td>poll(time, unit)</td>
- </tr>
- <tr>
-   <td><b>Examine</b></td>
-   <td>element()</td>
-   <td>peek()</td>
-   <td><em>not applicable</em></td>
-   <td><em>not applicable</em></td>
- </tr>
-</table>
-
+|  |Throws exception|Special value|Blocks|Times out|
+|:---:|:---:|:---:|:---:|:---:|
+|Insert|add(e)|offer(e)|put(e)|offer(e, time, unit)|
+|Remove|remove()|poll()|take()|poll(time, unit)|
+|Examine|element()|peek()|not applicable|not applicable|
 
 **注意事项**
 * BlockingQueue 不接受空元素 null，否则会抛出 NullPointerException 异常

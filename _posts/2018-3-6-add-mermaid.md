@@ -1,6 +1,6 @@
 ---          
 layout:     post
-title:      "test mermaid"
+title:      "添加 mermaid"
 subtitle:   "给 github.io 添加流程图支持" 
 date:       2018-03-6 10:00:00
 author:     mzl 

@@ -19,8 +19,7 @@ tags:
 ## 使用方法
 使用方法很简单：
 1. 在本项目的 styles/js 目录下创建文件 mermaid.min.js，内容是[mermaid.min.js](!https://unpkg.com/mermaid@7.1.2/dist/mermaid.min.js)
-2. 在本项目的 _include/footer.html 文件中，添加如下内容
-    <script src="{{ "/styles/js/mermaid.min.js " | prepend: site.baseurl }}"></script>
+2. 在本项目的 _include/footer.html 文件中，添加内容 `<script src="{{ "/styles/js/mermaid.min.js " | prepend: site.baseurl }}"></script>`
 3. 测试下是否生效。
 4. 更多用法，见 mermaid 的 [gitbook](!https://mermaidjs.github.io/)
 

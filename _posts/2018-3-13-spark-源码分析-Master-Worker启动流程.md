@@ -16,6 +16,52 @@ tags:
 在分析提交 task 的流程中，被 executor 的启动流程搞混了，打算写几篇关于启动的文章，自然考虑从 Master 和 Worker 的启动写起。
 在启动过程中，主要是消息的传递和通信，本身其实不复杂。
 
+<div class="mermaid">
+graph TD
+    start-all(start-all)-->|1.调用脚本start-master.sh|start-master(start-master)
+    start-master(start-master)-->|4.脚本指定要执行的类Master|Master(Master)
+    Master-->|5.执行main方法|main[main]
+    main-->|6.执行方法startRpcEnvAndEndpoint|startRpcEnvAndEndpoint[startRpcEnvAndEndpoint]
+    startRpcEnvAndEndpoint-->|7.调用对象RpcEnv|RpcEnv(RpcEnv)
+    RpcEnv-->|8.执行方法create创建rpcEnv对象|create[RpcEnv.create]
+    create-->|9.调用对象NettyRpcEnvFactory|NettyRpcEnvFactory(NettyRpcEnvFactory)
+    NettyRpcEnvFactory-->|10.执行工厂类的create方法创建rpcEnv|create[NettyRpcEnvFactory.create]
+    create[NettyRpcEnvFactory.create]-->|11.初始化类NettyRpcEnv|NettyRpcEnv(NettyRpcEnv)
+    NettyRpcEnv-->|12.初始化类Dispatcher|Dispatcher(NettyRpcEnv)
+    Dispatcher-->|13.初始化线程池执行器|threadpool(threadpool)
+    threadpool-->|14.初始化消息回环线程|MessageLoop
+    startRpcEnvAndEndpoint-->|15.调用创建的对象rpcEnv|rpcEnv(rpcEnv)
+    rpcEnv-->|16.执行方法setupEndpoint|setupEndpoint[setupEndpoint]
+    setupEndpoint-->|17.调用NettyRpcEnv的成员对象dispatcher|dispatcher(dispatcher)
+    dispatcher-->|18.执行方法registerRpcEndpoint|registerRpcEndpoint[registerRpcEndpoint]
+    registerRpcEndpoint-->|19.调用对象初始化类EndpointData|EndpointData(EndpointData)
+    EndpointData-->|20.初始化类Inbox|Inbox(Inbox)
+    Inbox-->|21.调用对象-消息队列|messages[messages]
+    messages-->|22.添加事件OnStart到消息队列|OnStart[OnStart]
+    registerRpcEndpoint-->|23.调用对象receivers|receivers(receivers)
+    receivers-->|24.执行方法offer，将消息加入集合中|offer[offer]
+    MessageLoop-->|25.调用对象inbox|inbox
+    inbox-->|26.执行方法process，处理消息|process(process)
+    process-->|27.远程调用对象|master(master)
+    master-->|28.执行方法onStart|onStart(onStart)
+    start-all-->|2.调用脚本start-slaves.sh|start-slaves(start-slaves)
+    start-slaves-->|3.调用脚本start-slave.sh|start-slave(start-slave)
+    start-slave-->|4.脚本指定要执行的类|Worker(Worker)
+    Worker-->|5.执行main方法|main[main]
+    process-->|28.远程调用对象|worker(worker)
+    worker-->|29.执行方法onStart|onStart[onStart]
+    onStart-->|30.执行方法registerWithMaster|registerWithMaster[registerWithMaster]
+    registerWithMaster-->|31.执行方法，尝试向所有master注册worker信息|tryRegisterAllMasters(tryRegisterAllMasters)
+    tryRegisterAllMasters-->|32.执行方法，将注册信息发往master|sendRegisterMessageToMaster(sendRegisterMessageToMaster)
+    sendRegisterMessageToMaster-->|33.调用对象|masterEndpoint(masterEndpoint)
+    masterEndpoint-->|34.触发事件|RegisterWorker
+    RegisterWorker-->|35.执行方法|registerWorker[registerWorker]
+    RegisterWorker-->|36.调用对象|workerRef(workerRef)
+    workerRef-->|37.触发事件|RegisteredWorker[RegisteredWorker]
+    RegisteredWorker-->|38.调用对象|masterRef(masterRef)
+    masterRef-->|39.触发事件|WorkerLatestState[WorkerLatestState]
+</div>
+
 ## 从启动脚本说起
 
 对 spark 启动有一些了解的人知道，spark 启动是从脚本文件 start-all.sh 开始的，如下(只粘贴了关键的语句)：
@@ -908,3 +954,56 @@ case RegisterWorker(
     }
   }
 ```
+
+### Worker 的 RegisteredWorker 事件
+
+Master 的 RegisterWorker 事件会触发 Worker 的 RegisteredWorker 事件
+
+```scala
+private def handleRegisterResponse(msg: RegisterWorkerResponse): Unit = synchronized {
+  msg match {
+    case RegisteredWorker(masterRef, masterWebUiUrl, masterAddress) =>
+      if (preferConfiguredMasterAddress) {
+        logInfo("Successfully registered with master " + masterAddress.toSparkURL)
+      } else {
+        logInfo("Successfully registered with master " + masterRef.address.toSparkURL)
+      }
+      registered = true
+      changeMaster(masterRef, masterWebUiUrl, masterAddress)
+      /** 在这里开始循环发送 SeadHeartbeat, 要关注心跳的动作 */
+      forwordMessageScheduler.scheduleAtFixedRate(new Runnable {
+        override def run(): Unit = Utils.tryLogNonFatalError {
+          self.send(SendHeartbeat)
+        }
+      }, 0, HEARTBEAT_MILLIS, TimeUnit.MILLISECONDS)
+      if (CLEANUP_ENABLED) {
+        logInfo(
+          s"Worker cleanup enabled; old application directories will be deleted in: $workDir")
+        forwordMessageScheduler.scheduleAtFixedRate(new Runnable {
+          override def run(): Unit = Utils.tryLogNonFatalError {
+            self.send(WorkDirCleanup)
+          }
+        }, CLEANUP_INTERVAL_MILLIS, CLEANUP_INTERVAL_MILLIS, TimeUnit.MILLISECONDS)
+      }
+
+      val execs = executors.values.map { e =>
+        new ExecutorDescription(e.appId, e.execId, e.cores, e.state)
+      }
+      /** 将当前 worker 节点上的 executor 信息和 driver 信息发送到 master */
+      /** master 根据 worker 节点上的信息, 和本地信息比对，确定是否需要 kill 掉 executor 或 driver */
+      masterRef.send(WorkerLatestState(workerId, execs.toList, drivers.keys.toSeq))
+
+    case RegisterWorkerFailed(message) =>
+      if (!registered) {
+        logError("Worker registration failed: " + message)
+        System.exit(1)
+      }
+
+    /** MasterInStandby 这个事件不做任何处理 */
+    case MasterInStandby =>
+      // Ignore. Master not yet ready.
+  }
+}
+```
+
+到这里，spark Master 和 Worker 都启动成功了。但关于启动，还有 driver 的启动和 executor 的启动这两个过程没有分析，后续博客里分析。

@@ -737,4 +737,174 @@ worker 起来之后，与 master 做的一些交互。
 
 ### Worker 的 main 方法
 
-TODO 未完待续
+Worker 的 main 方法和 Master 的 main 方法非常类似，只是多了个解析 master url 的地方（前面脚本中提到过，启动 Worker 时要指定 master url）,
+所以我们直接跳过中间的消息传递（因为和 Master 是一样的），到 Inbox 触发 Worker 的 onStart 方法后。
+
+```scala
+def main(argStrings: Array[String]) {
+  Utils.initDaemon(log)
+  val conf = new SparkConf
+  val args = new WorkerArguments(argStrings, conf)
+  val rpcEnv = startRpcEnvAndEndpoint(args.host, args.port, args.webUiPort, args.cores,
+    args.memory, args.masters, args.workDir, conf = conf)
+  /** 中间过程都是通过消息完成的，所以只要等待 worker 进程被手动干掉即可 */
+  rpcEnv.awaitTermination()
+}
+
+def startRpcEnvAndEndpoint(
+    host: String,
+    port: Int,
+    webUiPort: Int,
+    cores: Int,
+    memory: Int,
+    masterUrls: Array[String],
+    workDir: String,
+    workerNumber: Option[Int] = None,
+    conf: SparkConf = new SparkConf): RpcEnv = {
+
+  // The LocalSparkCluster runs multiple local sparkWorkerX RPC Environments
+  val systemName = SYSTEM_NAME + workerNumber.map(_.toString).getOrElse("")
+  val securityMgr = new SecurityManager(conf)
+  /** 一样是创建 NettyRpcEnv 对象 */
+  val rpcEnv = RpcEnv.create(systemName, host, port, conf, securityMgr)
+  /** 多了解析 master url 的部分 */
+  val masterAddresses = masterUrls.map(RpcAddress.fromSparkURL(_))
+  rpcEnv.setupEndpoint(ENDPOINT_NAME, new Worker(rpcEnv, webUiPort, cores, memory,
+    masterAddresses, ENDPOINT_NAME, workDir, conf, securityMgr))
+  rpcEnv
+}
+```
+
+### Worker 的 onStart 方法
+
+worker 的 onStart 方法中，做的最重要的事情，就是注册 worker 信息到 master 节点中去。
+
+```scala
+override def onStart() {
+  assert(!registered)
+  logInfo("Starting Spark worker %s:%d with %d cores, %s RAM".format(
+    host, port, cores, Utils.megabytesToString(memory)))
+  logInfo(s"Running Spark version ${org.apache.spark.SPARK_VERSION}")
+  logInfo("Spark home: " + sparkHome)
+  createWorkDir()
+  shuffleService.startIfEnabled()
+  webUi = new WorkerWebUI(this, workDir, webUiPort)
+  webUi.bind()
+
+  workerWebUiUrl = s"http://$publicAddress:${webUi.boundPort}"
+  /** 将 worker 信息注册到 master 节点!!! */
+  registerWithMaster()
+
+  metricsSystem.registerSource(workerSource)
+  metricsSystem.start()
+  /** Attach the worker metrics servlet handler to the web ui after the metrics system is started. */
+  metricsSystem.getServletHandlers.foreach(webUi.attachHandler)
+}
+```
+
+### Worker 节点的 registerWithMaster 相关方法
+
+Worker 节点注册到 Master 节点的方法，主要有无参的 registerWithMaster、tryRegisterAllMasters 和
+有参的 registerWithMaster 三个方法。三个方法的调用关系看代码。
+
+```scala
+private def registerWithMaster() {
+  /** onDisconnected may be triggered multiple times, so don't attempt registration */
+  /** if there are outstanding registration attempts scheduled. */
+  registrationRetryTimer match {
+    /** 注册时的重试机制，由于第一次注册时还没初始化，没有重试机制，因为为 None */
+    case None =>
+      registered = false
+      /** 尝试向所有的 master 发起注册请求 */
+      registerMasterFutures = tryRegisterAllMasters()
+      connectionAttemptCount = 0
+      /** 这里的重试机制，目的都是注册 master，跳过 */
+      registrationRetryTimer = Some(forwordMessageScheduler.scheduleAtFixedRate(
+        new Runnable {
+          override def run(): Unit = Utils.tryLogNonFatalError {
+            Option(self).foreach(_.send(ReregisterWithMaster))
+          }
+        },
+        INITIAL_REGISTRATION_RETRY_INTERVAL_SECONDS,
+        INITIAL_REGISTRATION_RETRY_INTERVAL_SECONDS,
+        TimeUnit.SECONDS))
+    case Some(_) =>
+      logInfo("Not spawning another attempt to register with the master, since there is an" +
+        " attempt scheduled already.")
+  }
+}
+
+private def tryRegisterAllMasters(): Array[JFuture[_]] = {
+  masterRpcAddresses.map { masterAddress =>
+    registerMasterThreadPool.submit(new Runnable {
+      override def run(): Unit = {
+        try {
+          logInfo("Connecting to master " + masterAddress + "...")
+          /** 这里尝试对每个 master 节点，创建其 masterEndpoint, 然后去 registerWithMaster */
+          val masterEndpoint = rpcEnv.setupEndpointRef(masterAddress, Master.ENDPOINT_NAME)
+          registerWithMaster(masterEndpoint)
+        } catch {
+          case ie: InterruptedException => // Cancelled
+          case NonFatal(e) => logWarning(s"Failed to connect to master $masterAddress", e)
+        }
+      }
+    })
+  }
+}
+
+private def registerWithMaster(masterEndpoint: RpcEndpointRef): Unit = {
+  /** registerWithMaster，主要是向 master 发送 RegisterWorker 事件，并在 master 返回时 */
+  /** 根据返回的是 Success 还是 Failure, 决定是下一步要执行的操作 */
+  masterEndpoint.ask[RegisterWorkerResponse](RegisterWorker(
+    workerId, host, port, self, cores, memory, workerWebUiUrl))
+    .onComplete {
+      /** This is a very fast action so we can use "ThreadUtils.sameThread" */
+      case Success(msg) =>
+        /** 若向 master 注册成功，则执行 handleRegisterResponse */
+        Utils.tryLogNonFatalError {
+          handleRegisterResponse(msg)
+        }
+      case Failure(e) =>
+        /** 若向 master 注册失败，则退出 */
+        logError(s"Cannot register with master: ${masterEndpoint.address}", e)
+        System.exit(1)
+    }(ThreadUtils.sameThread)
+}
+```
+
+### Master 的 RegisterWorker 事件
+
+上一节提到，Worker 的 registerWithMaster 方法里，会向 Master 各个节点发送 RegisterWorker 事件，
+这一节分析 Master 的 RegisterWorker 事件会触发哪些操作。
+
+```scala
+/** RegisterWorker 事件在 Master 类的 receiveAndReply 方法中 */
+case RegisterWorker(
+    id, workerHost, workerPort, workerRef, cores, memory, workerWebUiUrl) =>
+  logInfo("Registering worker %s:%d with %d cores, %s RAM".format(
+    workerHost, workerPort, cores, Utils.megabytesToString(memory)))
+  /** 如果当前 master 节点是 Standby，则返回 MasterInStandby, Worker 接受后不做任何处理，跳过 */
+  if (state == RecoveryState.STANDBY) {
+    context.reply(MasterInStandby)
+  } else if (idToWorker.contains(id)) {
+    /** 如果 worker 已经注册过了，则返回注册失败的信息 */
+    context.reply(RegisterWorkerFailed("Duplicate worker ID"))
+  } else {
+    val worker = new WorkerInfo(id, workerHost, workerPort, cores, memory,
+      workerRef, workerWebUiUrl)
+    /** 通过方法 registerWorker 注册 worker，注册成功后，通过 persistenceEngine 将其持久化 */
+    /** 然后返回消息给 Worker, 消息是事件 RegisteredWorker */
+    /** registerWorker 方法只是在本地保存 worker 信息到一个 hashset */
+    if (registerWorker(worker)) {
+      persistenceEngine.addWorker(worker)
+      context.reply(RegisteredWorker(self, masterWebUiUrl))
+      schedule()
+    } else {
+      val workerAddress = worker.endpoint.address
+      logWarning("Worker registration failed. Attempted to re-register worker at same " +
+        "address: " + workerAddress)
+      context.reply(RegisterWorkerFailed("Attempted to re-register worker at same address: "
+        + workerAddress))
+    }
+  }
+```

@@ -43,16 +43,16 @@ graph TD
     Inbox-->|21.调用对象-消息队列|messages[messages]
     messages-->|22.添加事件OnStart到消息队列|OnStart[OnStart]
     registerRpcEndpoint-->|23.调用对象receivers|receivers(receivers)
-    receivers-->|24.执行方法offer，将消息加入集合中|offer[offer]
+    receivers(receivers)-->|24.执行方法offer, 将消息加入集合中|offer[offer]
     MessageLoop-->|25.调用对象inbox|inbox
-    inbox-->|26.执行方法process，处理消息|process(process)
+    inbox-->|26.执行方法process,处理消息|process(process)
     process-->|27.远程调用对象|master(master)
     master-->|28.执行方法onStart|onStart(onStart)
     process-->|28.远程调用对象|worker(worker)
     worker-->|29.执行方法onStart|onStart[onStart]
     onStart-->|30.执行方法registerWithMaster|registerWithMaster[registerWithMaster]
-    registerWithMaster-->|31.执行方法，尝试向所有master注册worker信息|tryRegisterAllMasters(tryRegisterAllMasters)
-    tryRegisterAllMasters-->|32.执行方法，将注册信息发往master|sendRegisterMessageToMaster(sendRegisterMessageToMaster)
+    registerWithMaster-->|31.执行方法,尝试向所有master注册worker信息|tryRegisterAllMasters(tryRegisterAllMasters)
+    tryRegisterAllMasters-->|32.执行方法,将注册信息发往master|sendRegisterMessageToMaster(sendRegisterMessageToMaster)
     sendRegisterMessageToMaster-->|33.调用对象|masterEndpoint(masterEndpoint)
     masterEndpoint-->|34.触发事件|RegisterWorker
     RegisterWorker-->|35.执行方法|registerWorker[registerWorker]

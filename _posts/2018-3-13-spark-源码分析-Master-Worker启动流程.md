@@ -8,6 +8,7 @@ catalog:    true
 tags:
     - Master
     - Worker 
+    - spark
 ---
 
 {:toc}

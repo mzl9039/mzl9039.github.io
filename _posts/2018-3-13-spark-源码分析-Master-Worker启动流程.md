@@ -19,7 +19,11 @@ tags:
 <div class="mermaid">
 graph TD
     start-all(start-all)-->|1.调用脚本start-master.sh|start-master(start-master)
+    start-all-->|2.调用脚本start-slaves.sh|start-slaves(start-slaves)
+    start-slaves-->|3.调用脚本start-slave.sh|start-slave(start-slave)
+    start-slave-->|4.脚本指定要执行的类|Worker(Worker)
     start-master(start-master)-->|4.脚本指定要执行的类Master|Master(Master)
+    Worker-->|5.执行main方法|main[main]
     Master-->|5.执行main方法|main[main]
     main-->|6.执行方法startRpcEnvAndEndpoint|startRpcEnvAndEndpoint[startRpcEnvAndEndpoint]
     startRpcEnvAndEndpoint-->|7.调用对象RpcEnv|RpcEnv(RpcEnv)
@@ -44,10 +48,6 @@ graph TD
     inbox-->|26.执行方法process，处理消息|process(process)
     process-->|27.远程调用对象|master(master)
     master-->|28.执行方法onStart|onStart(onStart)
-    start-all-->|2.调用脚本start-slaves.sh|start-slaves(start-slaves)
-    start-slaves-->|3.调用脚本start-slave.sh|start-slave(start-slave)
-    start-slave-->|4.脚本指定要执行的类|Worker(Worker)
-    Worker-->|5.执行main方法|main[main]
     process-->|28.远程调用对象|worker(worker)
     worker-->|29.执行方法onStart|onStart[onStart]
     onStart-->|30.执行方法registerWithMaster|registerWithMaster[registerWithMaster]

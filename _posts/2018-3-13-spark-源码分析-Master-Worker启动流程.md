@@ -47,10 +47,10 @@ graph TD
     MessageLoop-->|25.调用对象inbox|inbox
     inbox-->|26.执行方法process,处理消息|process(process)
     process-->|27.远程调用对象|master(master)
-    master-->|28.执行方法onStart|onStart(onStart)
+    master-->|28.执行方法onStart|master-onStart(Master.onStart)
     process-->|28.远程调用对象|worker(worker)
-    worker-->|29.执行方法onStart|onStart[onStart]
-    onStart-->|30.执行方法registerWithMaster|registerWithMaster[registerWithMaster]
+    worker-->|29.执行方法onStart|worker-onStart[Worker.onStart]
+    worker-onStart-->|30.执行方法registerWithMaster|registerWithMaster[registerWithMaster]
     registerWithMaster-->|31.执行方法,尝试向所有master注册worker信息|tryRegisterAllMasters(tryRegisterAllMasters)
     tryRegisterAllMasters-->|32.执行方法,将注册信息发往master|sendRegisterMessageToMaster(sendRegisterMessageToMaster)
     sendRegisterMessageToMaster-->|33.调用对象|masterEndpoint(masterEndpoint)

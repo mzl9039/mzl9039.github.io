@@ -54,12 +54,12 @@ graph TD
     registerWithMaster-->|31.执行方法,尝试向所有master注册worker信息|tryRegisterAllMasters(tryRegisterAllMasters)
     tryRegisterAllMasters-->|32.执行方法,将注册信息发往master|sendRegisterMessageToMaster(sendRegisterMessageToMaster)
     sendRegisterMessageToMaster-->|33.调用对象|masterEndpoint(masterEndpoint)
-    masterEndpoint-->|34.触发事件|RegisterWorker
+    masterEndpoint-->|34.触发Master端事件|RegisterWorker
     RegisterWorker-->|35.执行方法|registerWorker[registerWorker]
     RegisterWorker-->|36.调用对象|workerRef(workerRef)
-    workerRef-->|37.触发事件|RegisteredWorker[RegisteredWorker]
+    workerRef-->|37.触发Worker端事件|RegisteredWorker[RegisteredWorker]
     RegisteredWorker-->|38.调用对象|masterRef(masterRef)
-    masterRef-->|39.触发事件|WorkerLatestState[WorkerLatestState]
+    masterRef-->|39.触发Master端事件|WorkerLatestState[WorkerLatestState]
 </div>
 
 ## 从启动脚本说起

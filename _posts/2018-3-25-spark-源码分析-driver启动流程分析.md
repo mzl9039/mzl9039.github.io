@@ -49,7 +49,7 @@ graph TD
     launchDriver-->|23.调用对象|worker(worker)
     worker-->|24.触发远程事件|LaunchDriver[LaunchDriver]
     LaunchDriver-->|25.生成对象|DriverRunner(DriverRunner)
-    DriverRunner-->|26.执行方法|dr_start
+    DriverRunner-->|26.执行方法|dr_start[start]
     schedule-->|27.执行方法|startExecutorsOnWorkers
     startExecutorsOnWorkers-->|28.执行方法|scheduleExecutorsOnWorkers
     scheduleExecutorsOnWorkers-->|29.执行方法|allocateWorkerResourceToExecutors

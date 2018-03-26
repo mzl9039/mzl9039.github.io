@@ -1,11 +1,12 @@
 ---
 layout:     post
 title:      "Spark driver 启动流程分析"
-subtitle:   "driver 启动"
-date:       2018-3-15 16:00:00
+subtitle:   "driver 启动, app 注册以及 executor 的启动过程"
+date:       2018-3-25 16:00:00
 author:     mzl
 catalog:    true
 tags:
+    - spark
     - SparkContext
     - Driver
 ---
@@ -18,6 +19,46 @@ tags:
 可以不在本地，而在集群上，如 yarn 的 cluster 模式下， driver 端是 yarn 上的一个 app）.
 
 所以我们知道，启动 driver 是在初始化 sc 的时候完成的，这里是我们分析的起点。
+
+我们以 standalone 模式为例画流程图
+
+<div class="mermaid">
+graph TD
+    SparkContext(sc初始化)-->|1.执行方法|createTaskScheduler[createTaskScheduler]
+    createTaskScheduler[createTaskScheduler]-->|2.生成对象|taskScheduler(taskScheduler)
+    taskScheduler(taskScheduler)-->|3.执行方法|ts_start[start]
+    ts_start[start]-->|4.调用对象|schedulerBackend(schedulerBackend)
+    schedulerBackend-->|5.执行方法|sb_start[start]
+    sb_start-->|6.调用父类对象|super(父类CoarseGrainedSchedulerBackend对象)
+    super-->|7.执行方法|cgsb_start[start]
+    cgsb_start-->|8.生成对象|driverEndpoint(driverEndpoint)
+    schedulerBackend-->|9.生成对象|StandaloneAppClient(client)
+    StandaloneAppClient-->|10.执行方法|sac_start[start]
+    sac_start-->|11.生成对象|ClientEndpoint(clientEndpoint)
+    ClientEndpoint-->|12.执行方法|ce_onStart[onStart]
+    ce_onStart-->|13.执行方法|registerWithMaster[registerWithMaster]
+    registerWithMaster-->|14.执行方法|tryRegisterAllMasters[tryRegisterAllMasters]
+    tryRegisterAllMasters-->|15.调用对象|masterRef(masterRef)
+    masterRef-->|16.触发Master端事件|RegisterApplication[RegisterApplication]
+    RegisterApplication-->|17.执行方法|createApplication[createApplication]
+    createApplication-->|18.执行方法|registerApplication[registerApplication]
+    registerApplication-->|19.调用对象|persistenceEngine(persistenceEngine)
+    persistenceEngine-->|20.执行方法|addApplication[addApplication]
+    addApplication-->|21.执行方法|schedule[schedule]
+    schedule-->|22.执行方法|launchDriver[launchDriver]
+    launchDriver-->|23.调用对象|worker(worker)
+    worker-->|24.触发远程事件|LaunchDriver[LaunchDriver]
+    LaunchDriver-->|25.生成对象|DriverRunner(DriverRunner)
+    DriverRunner-->|26.执行方法|dr_start
+    schedule-->|27.执行方法|startExecutorsOnWorkers
+    startExecutorsOnWorkers-->|28.执行方法|scheduleExecutorsOnWorkers
+    scheduleExecutorsOnWorkers-->|29.执行方法|allocateWorkerResourceToExecutors
+    allocateWorkerResourceToExecutors-->|30.执行方法|launchExecutor
+    launchExecutor-->|31.调用对象|worker
+    worker-->|32.触发远程事件|LaunchExecutor[LaunchExecutor]
+    LaunchExecutor-->|33.生成对象|ExecutorRunner(ExecutorRunner)
+    ExecutorRunner-->|34.执行方法|er_start[start]
+</div>
 
 ## 初始化 DriverEndpoint
 
@@ -279,6 +320,7 @@ private def schedule(): Unit = {
 ## Master 的 launchDriver 方法
 
 launchDriver 方法主要是触发了 worker 节点的 LaunchDriver 事件
+这里是 Master 节点的 launchDriver 方法和 Worker 节点的 LaunchDriver 事件
 
 ```scala
 private def launchDriver(worker: WorkerInfo, driver: DriverInfo) {
@@ -308,4 +350,149 @@ case LaunchDriver(driverId, driverDesc) =>
 
   coresUsed += driverDesc.cores
   memoryUsed += driverDesc.mem
+```
+
+## Master 的 startExecutorsOnWorkers 方法
+
+这个方法主要是在 worker 节点上启动 executor.
+
+```scala
+/** Schedule and launch executors on workers */
+private def startExecutorsOnWorkers(): Unit = {
+  /** Right now this is a very simple FIFO scheduler. We keep trying to fit in the first app */
+  /** in the queue, then the second app, etc. */
+  for (app <- waitingApps if app.coresLeft > 0) {
+    val coresPerExecutor: Option[Int] = app.desc.coresPerExecutor
+    /** Filter out workers that don't have enough resources to launch an executor */
+    /** 找出资源够用的 Worker 节点，即内存和核数大于 executor 所需要的内存与核数 */
+    val usableWorkers = workers.toArray.filter(_.state == WorkerState.ALIVE)
+      .filter(worker => worker.memoryFree >= app.desc.memoryPerExecutorMB &&
+        worker.coresFree >= coresPerExecutor.getOrElse(1))
+      .sortBy(_.coresFree).reverse
+    /** 初步计划在每个 worker 上为 executor 分配多少个核,这里只是计算能否分配，并计划分配多少，并没有直接去分配 */
+    val assignedCores = scheduleExecutorsOnWorkers(app, usableWorkers, spreadOutApps)
+
+    /** Now that we've decided how many cores to allocate on each worker, let's allocate them */
+    for (pos <- 0 until usableWorkers.length if assignedCores(pos) > 0) {
+      /** 决定每个 worker 分配多少个核，并进行分配 */
+      allocateWorkerResourceToExecutors(
+        app, assignedCores(pos), coresPerExecutor, usableWorkers(pos))
+    }
+  }
+}
+```
+
+## Master 的 allocateWorkerResourceToExecutors 方法
+
+该方法真正执行在 worker 上为 executor 分配多少核，并启动 executor
+
+```scala
+/** Allocate a worker's resources to one or more executors. */
+/** @param app the info of the application which the executors belong to */
+/** @param assignedCores number of cores on this worker for this application */
+/** @param coresPerExecutor number of cores per executor */
+/** @param worker the worker info */
+private def allocateWorkerResourceToExecutors(
+    app: ApplicationInfo,
+    assignedCores: Int,
+    coresPerExecutor: Option[Int],
+    worker: WorkerInfo): Unit = {
+  /** If the number of cores per executor is specified, we divide the cores assigned */
+  /** to this worker evenly among the executors with no remainder. */
+  /** Otherwise, we launch a single executor that grabs all the assignedCores on this worker. */
+  /** 如果 number of cores per executor 被指明了，我们平均地把这个 worker 节点上的核数分配给 */
+  /** 每个 executor; 否则，我们只启动一个 executor，并将已计划的所有的核数分配给它 */
+  val numExecutors = coresPerExecutor.map { assignedCores / _ }.getOrElse(1)
+  val coresToAssign = coresPerExecutor.getOrElse(assignedCores)
+  for (i <- 1 to numExecutors) {
+    val exec = app.addExecutor(worker, coresToAssign)
+    launchExecutor(worker, exec)
+    app.state = ApplicationState.RUNNING
+  }
+}
+```
+
+## Master 的 launchExecutor 方法
+
+这个方法会触发 worker 的 LaunchExecutor 事件，以及 client 端的 ExecutorAdded 事件
+
+```scala
+private def launchExecutor(worker: WorkerInfo, exec: ExecutorDesc): Unit = {
+  logInfo("Launching executor " + exec.fullId + " on worker " + worker.id)
+  worker.addExecutor(exec)
+  /** worker 节点触发 LaunchExecutor 事件 */
+  worker.endpoint.send(LaunchExecutor(masterUrl,
+    exec.application.id, exec.id, exec.application.desc, exec.cores, exec.memory))
+  /** client 端触发 ExecutorAdded 事件, 这个事件只是打印一句日志，跳过 */
+  exec.application.driver.send(
+    ExecutorAdded(exec.id, worker.id, worker.hostPort, exec.cores, exec.memory))
+}
+```
+
+## Worker 的 LaunchExecutor 事件
+
+这个事件会尝试在 worker 节点启动一个 ExecutorRunner 线程，并由这个线程去启动 executor
+
+```scala
+case LaunchExecutor(masterUrl, appId, execId, appDesc, cores_, memory_) =>
+  if (masterUrl != activeMasterUrl) {
+    logWarning("Invalid Master (" + masterUrl + ") attempted to launch executor.")
+  } else {
+    try {
+      logInfo("Asked to launch executor %s/%d for %s".format(appId, execId, appDesc.name))
+
+      /** Create the executor's working directory */
+      val executorDir = new File(workDir, appId + "/" + execId)
+      if (!executorDir.mkdirs()) {
+        throw new IOException("Failed to create directory " + executorDir)
+      }
+
+      /** Create local dirs for the executor. These are passed to the executor via the */
+      /** SPARK_EXECUTOR_DIRS environment variable, and deleted by the Worker when the */
+      /** application finishes. */
+      val appLocalDirs = appDirectories.getOrElse(appId,
+        Utils.getOrCreateLocalRootDirs(conf).map { dir =>
+          val appDir = Utils.createDirectory(dir, namePrefix = "executor")
+          Utils.chmod700(appDir)
+          appDir.getAbsolutePath()
+        }.toSeq)
+      appDirectories(appId) = appLocalDirs
+      /** 通过这个线程类去启动 executor */
+      /** 这个线程类中，启动 executor 的描述命令，来自 appDesc，在这个线程类中并没有介绍 */
+      /** 因此，想了解这个信息，需要追溯 appDesc 的创建部分 */
+      val manager = new ExecutorRunner(
+        appId,
+        execId,
+        appDesc.copy(command = Worker.maybeUpdateSSLSettings(appDesc.command, conf)),
+        cores_,
+        memory_,
+        self,
+        workerId,
+        host,
+        webUi.boundPort,
+        publicAddress,
+        sparkHome,
+        executorDir,
+        workerUri,
+        conf,
+        appLocalDirs, ExecutorState.RUNNING)
+      executors(appId + "/" + execId) = manager
+      /** 启动线程 */
+      manager.start()
+      coresUsed += cores_
+      memoryUsed += memory_
+      /** 将启动 executor 的结果发送给 master 节点 */
+      sendToMaster(ExecutorStateChanged(appId, execId, manager.state, None, None))
+    } catch {
+      case e: Exception =>
+        logError(s"Failed to launch executor $appId/$execId for ${appDesc.name}.", e)
+        if (executors.contains(appId + "/" + execId)) {
+          executors(appId + "/" + execId).kill()
+          executors -= appId + "/" + execId
+        }
+        /** 启动 executor 异常时，发送 FAILED 状态给 mdaster */
+        sendToMaster(ExecutorStateChanged(appId, execId, ExecutorState.FAILED,
+          Some(e.toString), None))
+    }
+  }
 ```

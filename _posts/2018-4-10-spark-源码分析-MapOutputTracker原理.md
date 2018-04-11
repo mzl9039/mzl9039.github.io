@@ -33,7 +33,6 @@ graph TD
         MapOutputTrackerMaster-->MapOutputTrackerMasterEndpoint
     end
     subgraph Executor0
-        MapOutputTrackerWorker0[MapOutputTrackerWorker]-->MapOutputTrackerMasterEndpoint
         subgraph threadPool
             ShuffleMapTask1[ShuffleMapTask]
             ShuffleMapTask2[ShuffleMapTask]
@@ -41,7 +40,6 @@ graph TD
         end
     end
     subgraph Executor1
-        MapOutputTrackerWorker1[MapOutputTrackerWorker]-->MapOutputTrackerMasterEndpoint
         subgraph threadPool
             ResultTask1[ResultTask]
         end

@@ -32,18 +32,20 @@ graph TD
     subgraph Driver
         MapOutputTrackerMaster-->MapOutputTrackerMasterEndpoint
     end
-    subgraph Executor0
-        MapOutputTrackerWorker-->MapOutputTrackerMasterEndpoint
-        subgraph threadPool
-            ShuffleMapTask1[ShuffleMapTask]
-            ShuffleMapTask2[ShuffleMapTask]
-            ResultTask[ResultTask]
+    subgraph Executor
+        subgraph Executor0
+            MapOutputTrackerWorker-->MapOutputTrackerMasterEndpoint
+            subgraph threadPool
+                ShuffleMapTask1[ShuffleMapTask]
+                ShuffleMapTask2[ShuffleMapTask]
+                ResultTask[ResultTask]
+            end
         end
-    end
-    subgraph Executor1
-        MapOutputTrackerWorker-->MapOutputTrackerMasterEndpoint
-        subgraph threadPool
-            ResultTask[ResultTask]
+        subgraph Executor1
+            MapOutputTrackerWorker-->MapOutputTrackerMasterEndpoint
+            subgraph threadPool
+                ResultTask[ResultTask]
+            end
         end
     end
 </div>

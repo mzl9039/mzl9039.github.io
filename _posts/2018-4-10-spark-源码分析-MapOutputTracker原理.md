@@ -185,6 +185,7 @@ case smt: ShuffleMapTask =>
     } else {
       /** Mark any map-stage jobs waiting on this stage as finished */
       if (shuffleStage.mapStageJobs.nonEmpty) {
+        /** TODO：这里的 mapStageJobs 是什么含义和作用? */
         val stats = mapOutputTracker.getStatistics(shuffleStage.shuffleDep)
         for (job <- shuffleStage.mapStageJobs) {
           markMapStageJobAsFinished(job, stats)
@@ -197,7 +198,179 @@ case smt: ShuffleMapTask =>
 
 ## Executor 端 MapOutputTracker 的调用
 
+在 Executor 上执行 task 时，需要读取前面的 ShuffleMapStage 的数据，由于只有 ResultStage 才会触发计算，所以执行 ResultTask 时才真正去拉取数据
+进行计算，前面的 ShuffleMapStage 都只是把想着数据的元数据信息存储起来。这里需要注意的是，shuffle 过程中，读取数据是通过获取 ShuffleReader 的
+read 方法来读取的, 同样，spark shuffle 的原理和逻辑，以后再分析。
+
+```scala
+/** Read the combined key-values for this reduce task */
+override def read(): Iterator[Product2[K, C]] = {
+  /** 这里的 mapOutputTracker 调用了 getMapSizesByExecutorId 方法, 这个方法返回了一组二元组序列 Seq[(BlockManagerId, Seq[(BlockId, Long)])], */
+  /** 第一项为 BlockManagerId, 第二项为存储于该 BlockManager 上的一组 shuffle blocks, 这里的 getMapSizesByExecutorId 会获取 ShuffleMapStage */
+  /** 的 输出信息 MapStatus */
+  val wrappedStreams = new ShuffleBlockFetcherIterator(
+    context,
+    blockManager.shuffleClient,
+    blockManager,
+    mapOutputTracker.getMapSizesByExecutorId(handle.shuffleId, startPartition, endPartition),
+    serializerManager.wrapStream,
+    /** Note: we use getSizeAsMb when no suffix is provided for backwards compatibility */
+    SparkEnv.get.conf.getSizeAsMb("spark.reducer.maxSizeInFlight", "48m") * 1024 * 1024,
+    SparkEnv.get.conf.getInt("spark.reducer.maxReqsInFlight", Int.MaxValue),
+    SparkEnv.get.conf.get(config.REDUCER_MAX_REQ_SIZE_SHUFFLE_TO_MEM),
+    SparkEnv.get.conf.getBoolean("spark.shuffle.detectCorrupt", true))
+
+  val serializerInstance = dep.serializer.newInstance()
+
+  /** Create a key/value iterator for each stream */
+  val recordIter = wrappedStreams.flatMap { case (blockId, wrappedStream) =>
+    /** Note: the asKeyValueIterator below wraps a key/value iterator inside of a */
+    /** NextIterator. The NextIterator makes sure that close() is called on the */
+    /** underlying InputStream when all records have been read. */
+    serializerInstance.deserializeStream(wrappedStream).asKeyValueIterator
+  }
+
+  /** Update the context task metrics for each record read. */
+  val readMetrics = context.taskMetrics.createTempShuffleReadMetrics()
+  val metricIter = CompletionIterator[(Any, Any), Iterator[(Any, Any)]](
+    recordIter.map { record =>
+      readMetrics.incRecordsRead(1)
+      record
+    },
+    context.taskMetrics().mergeShuffleReadMetrics())
+
+  /** An interruptible iterator must be used here in order to support task cancellation */
+  val interruptibleIter = new InterruptibleIterator[(Any, Any)](context, metricIter)
+
+  val aggregatedIter: Iterator[Product2[K, C]] = if (dep.aggregator.isDefined) {
+    if (dep.mapSideCombine) {
+      /** We are reading values that are already combined */
+      val combinedKeyValuesIterator = interruptibleIter.asInstanceOf[Iterator[(K, C)]]
+      dep.aggregator.get.combineCombinersByKey(combinedKeyValuesIterator, context)
+    } else {
+      /** We don't know the value type, but also don't care -- the dependency *should* */
+      /** have made sure its compatible w/ this aggregator, which will convert the value */
+      /** type to the combined type C */
+      val keyValuesIterator = interruptibleIter.asInstanceOf[Iterator[(K, Nothing)]]
+      dep.aggregator.get.combineValuesByKey(keyValuesIterator, context)
+    }
+  } else {
+    require(!dep.mapSideCombine, "Map-side combine without Aggregator specified!")
+    interruptibleIter.asInstanceOf[Iterator[Product2[K, C]]]
+  }
+
+  /** Sort the output if there is a sort ordering defined. */
+  dep.keyOrdering match {
+    case Some(keyOrd: Ordering[K]) =>
+      /** Create an ExternalSorter to sort the data. */
+      val sorter =
+        new ExternalSorter[K, C, C](context, ordering = Some(keyOrd), serializer = dep.serializer)
+      sorter.insertAll(aggregatedIter)
+      context.taskMetrics().incMemoryBytesSpilled(sorter.memoryBytesSpilled)
+      context.taskMetrics().incDiskBytesSpilled(sorter.diskBytesSpilled)
+      context.taskMetrics().incPeakExecutionMemory(sorter.peakMemoryUsedBytes)
+      CompletionIterator[Product2[K, C], Iterator[Product2[K, C]]](sorter.iterator, sorter.stop())
+    case None =>
+      aggregatedIter
+  }
+}
+```
+
+### 获取 MapStatus
+
+在集群中，getMapSizesByExecutorId 这个方法是在 Executor 上调用的，当前的 mapOutputTracker 是一个 MapOutputTrackerWorker 对象，
+因此 getMapSizesByExecutorId 的实现如下：
+
+```scala
+override def getMapSizesByExecutorId(shuffleId: Int, startPartition: Int, endPartition: Int)
+    : Seq[(BlockManagerId, Seq[(BlockId, Long)])] = {
+  logDebug(s"Fetching outputs for shuffle $shuffleId, partitions $startPartition-$endPartition")
+  /** 这里的 getStatuses 方法就是获取 MapStatus 的地方 */
+  val statuses = getStatuses(shuffleId)
+  try {
+    MapOutputTracker.convertMapStatuses(shuffleId, startPartition, endPartition, statuses)
+  } catch {
+    case e: MetadataFetchFailedException =>
+      /** We experienced a fetch failure so our mapStatuses cache is outdated; clear it: */
+      mapStatuses.clear()
+      throw e
+  }
+}
+```
+
+下面分析 MapOutputTrackerWorker 的 getStatuses 方法：
+1. 尝试从本地缓存 mapStatuses 中获取 mapStatus, 若存在则直接返回，否则从远程拉取;
+2. fetching 存储了当前正在 fetch 的 shuffleId，若当前的 shuffleId 在 fetching 集合中，则阻塞线程等待；否则将当前 shuffleId 添加到 fetching；
+3. 调用 askTracker 方法，触发 MapOutputTrackerMaster 的事件 GetMapOutputStatuses，阻塞线程等待结果；
+4. MapOutputTrackerMaster 调用方法 getSerializedMapOutputStatuses,查询本地缓存中 shuffle 对应的 map output status 信息.
+    1. 
+5. 本地的 mapOutputTracker（实际上是 MapOutputTrackerWorker）的 askTracker 接收到数据后，将数据反序列化，并添加到本地缓存 mapStatuses.
+6. 根据执行的分区范围 [startPartition, endPartition] 将返回的结果 Array[MapStatus] map 为 Seq[(BlockManagerId, Seq[(BlockId, Long)])]
+
+```scala
+/** Get or fetch the array of MapStatuses for a given shuffle ID. NOTE: clients MUST synchronize */
+/** on this array when reading it, because on the driver, we may be changing it in place. */
+/** */
+/** (It would be nice to remove this restriction in the future.) */
+private def getStatuses(shuffleId: Int): Array[MapStatus] = {
+  val statuses = mapStatuses.get(shuffleId).orNull
+  if (statuses == null) {
+    logInfo("Don't have map outputs for shuffle " + shuffleId + ", fetching them")
+    val startTime = System.currentTimeMillis
+    var fetchedStatuses: Array[MapStatus] = null
+    fetching.synchronized {
+      /** Someone else is fetching it; wait for them to be done */
+      while (fetching.contains(shuffleId)) {
+        try {
+          fetching.wait()
+        } catch {
+          case e: InterruptedException =>
+        }
+      }
+
+      /** Either while we waited the fetch happened successfully, or */
+      /** someone fetched it in between the get and the fetching.synchronized. */
+      fetchedStatuses = mapStatuses.get(shuffleId).orNull
+      if (fetchedStatuses == null) {
+        /** We have to do the fetch, get others to wait for us. */
+        fetching += shuffleId
+      }
+    }
+
+    if (fetchedStatuses == null) {
+      /** We won the race to fetch the statuses; do so */
+      logInfo("Doing the fetch; tracker endpoint = " + trackerEndpoint)
+      /** This try-finally prevents hangs due to timeouts: */
+      try {
+        val fetchedBytes = askTracker[Array[Byte]](GetMapOutputStatuses(shuffleId))
+        fetchedStatuses = MapOutputTracker.deserializeMapStatuses(fetchedBytes)
+        logInfo("Got the output locations")
+        mapStatuses.put(shuffleId, fetchedStatuses)
+      } finally {
+        fetching.synchronized {
+          fetching -= shuffleId
+          fetching.notifyAll()
+        }
+      }
+    }
+    logDebug(s"Fetching map output statuses for shuffle $shuffleId took " +
+      s"${System.currentTimeMillis - startTime} ms")
+
+    if (fetchedStatuses != null) {
+      fetchedStatuses
+    } else {
+      logError("Missing all output locations for shuffle " + shuffleId)
+      throw new MetadataFetchFailedException(
+        shuffleId, -1, "Missing all output locations for shuffle " + shuffleId)
+    }
+  } else {
+    statuses
+  }
+}
+```
+
 ## MapOutputTracker 相关类源码分析
 
 # 引用：
 1. [spark学习-35-Spark的Map任务输出跟踪器MapOutputTracker](https://blog.csdn.net/qq_21383435/article/details/78603123)
+2. [Spark MapOutputTracker原理](https://blog.csdn.net/luofenghan/article/details/78591305)

@@ -302,12 +302,20 @@ override def getMapSizesByExecutorId(shuffleId: Int, startPartition: Int, endPar
 1. 尝试从本地缓存 mapStatuses 中获取 mapStatus, 若存在则直接返回，否则从远程拉取;
 2. fetching 存储了当前正在 fetch 的 shuffleId，若当前的 shuffleId 在 fetching 集合中，则阻塞线程等待；否则将当前 shuffleId 添加到 fetching；
 3. 调用 askTracker 方法，触发 MapOutputTrackerMaster 的事件 GetMapOutputStatuses，阻塞线程等待结果；
-4. MapOutputTrackerMaster 调用方法 getSerializedMapOutputStatuses,查询本地缓存中 shuffle 对应的 map output status 信息.
-    1. 
-5. 本地的 mapOutputTracker（实际上是 MapOutputTrackerWorker）的 askTracker 接收到数据后，将数据反序列化，并添加到本地缓存 mapStatuses.
-6. 根据执行的分区范围 [startPartition, endPartition] 将返回的结果 Array[MapStatus] map 为 Seq[(BlockManagerId, Seq[(BlockId, Long)])]
+4. MapOutputTrackerMaster 接收事件后，将 GetMapOutputMessage 添加到消息队列 mapOutputRequests
+5. 消息循环体 MessageLoop 处理消息 GetMapOutputMessage, 并调用方法 getSerializedMapOutputStatuses.
+6. 方法 getSerializedMapOutputStatuses 查询本地缓存中序列化过的 shuffle 对应的 map output status 信息,若不在缓存中，则先序列化并添加到缓存
+    1. 由于注册 shuffle 时每个 shuffleId 都分配了一个分段锁，以支持后续的并发调用：同一时间多个线程要获取同一个 shuffleId 对应的 mapStatuses,所以需要保证它只序列化或广播一次。
+    2. 获取锁之前检查是否已缓存，若已缓存则直接返回缓存的值；否则获取锁
+    3. 获取锁后再次检查缓存，防止获取锁期间有其它线程已经缓存了 mapStatuses; 若此时已有缓存，则返回缓存值；否则尝试序列化或包装为 Broadcast
+    4. 若需要将 mapStatuses 序列化或包装为 Broadcast, 则调用静态对象 MapOutputTracker 的方法 serializeMapStatuses; 若序列化后的结果大于等于 minSizeForBroadcast(默认 512K),
+    则广播，否则不广播。
+    5. 序列化完成后添加到缓存 cachedSerializedStatuses
+7. 本地的 mapOutputTracker（实际上是 MapOutputTrackerWorker）的 askTracker 接收到数据后，将数据反序列化，并添加到本地缓存 mapStatuses.
+8. 根据执行的分区范围 [startPartition, endPartition] 将返回的结果 Array[MapStatus] map 为 Seq[(BlockManagerId, Seq[(BlockId, Long)])]
 
 ```scala
+/** 在集群中，这个 getStatuses 方法是 Executor 中调用的，如果 Executor 上不存在该信息，才远程拉取 */
 /** Get or fetch the array of MapStatuses for a given shuffle ID. NOTE: clients MUST synchronize */
 /** on this array when reading it, because on the driver, we may be changing it in place. */
 /** */
@@ -367,9 +375,81 @@ private def getStatuses(shuffleId: Int): Array[MapStatus] = {
     statuses
   }
 }
-```
 
-## MapOutputTracker 相关类源码分析
+/** MapOutputTrackerMaster 的方法 getSerializedMapOutputStatuses */
+/** 当 MapOutputTrackerMaster 的消息循环体调用方法 getSerializedMapOutputStatuses 时， */
+/** 会先检查是否已经缓存 mapStatuses; 若已缓存则返回缓存的值，否则先序列化或包括为 Broadcast, 然后添加到缓存再返回 */
+def getSerializedMapOutputStatuses(shuffleId: Int): Array[Byte] = {
+  var statuses: Array[MapStatus] = null
+  var retBytes: Array[Byte] = null
+  var epochGotten: Long = -1
+
+  /** Check to see if we have a cached version, returns true if it does */
+  /** and has side effect of setting retBytes.  If not returns false */
+  /** with side effect of setting statuses */
+  /** 检查是否已缓存了 mapStatuses, 注意这里对 epoch 的检查对缓存的影响 */
+  def checkCachedStatuses(): Boolean = {
+    epochLock.synchronized {
+      if (epoch > cacheEpoch) {
+        cachedSerializedStatuses.clear()
+        clearCachedBroadcast()
+        cacheEpoch = epoch
+      }
+      cachedSerializedStatuses.get(shuffleId) match {
+        case Some(bytes) =>
+          retBytes = bytes
+          true
+        case None =>
+          logDebug("cached status not found for : " + shuffleId)
+          statuses = mapStatuses.getOrElse(shuffleId, Array.empty[MapStatus])
+          epochGotten = epoch
+          false
+      }
+    }
+  }
+
+  /** 获取分段锁前检查缓存，若已缓存则直接返回 */
+  if (checkCachedStatuses()) return retBytes
+  /** 获取分段锁，若分段锁为空，则创建一个分段锁 */
+  var shuffleIdLock = shuffleIdLocks.get(shuffleId)
+  if (null == shuffleIdLock) {
+    val newLock = new Object()
+    /** in general, this condition should be false - but good to be paranoid */
+    val prevLock = shuffleIdLocks.putIfAbsent(shuffleId, newLock)
+    shuffleIdLock = if (null != prevLock) prevLock else newLock
+  }
+  /** synchronize so we only serialize/broadcast it once since multiple threads call */
+  /** in parallel */
+  /** 获取分段锁，为更好地并发，序列化和 broadcast 只做一次 */
+  shuffleIdLock.synchronized {
+    /** double check to make sure someone else didn't serialize and cache the same */
+    /** mapstatus while we were waiting on the synchronize */
+    /** 为防止获取分段锁期间，其它线程已经序列化并缓存了，这里进行了 double check */
+    if (checkCachedStatuses()) return retBytes
+
+    /** If we got here, we failed to find the serialized locations in the cache, so we pulled */
+    /** out a snapshot of the locations as "statuses"; let's serialize and return that */
+    /** 程序运行到此，已经明确缓存中没有序列化的值，所以我们取值进行序列化，并尝试添加到 broadcast */
+    /** 对于是否添加到广播，主要是比较序列化后的大小，是否大于等于 minSizeForBroadcast, 若是则添加到广播 */
+    val (bytes, bcast) = MapOutputTracker.serializeMapStatuses(statuses, broadcastManager,
+      isLocal, minSizeForBroadcast)
+    logInfo("Size of output statuses for shuffle %d is %d bytes".format(shuffleId, bytes.length))
+    /** Add them into the table only if the epoch hasn't changed while we were working */
+    /** 添加到缓存 */
+    /** epoch: 每当一次 fetch 失败了，则 epoch 增加1, 以便让 client 节点知道何时清除它关于 map output locations 相关的缓存 */
+    epochLock.synchronized {
+      if (epoch == epochGotten) {
+        cachedSerializedStatuses(shuffleId) = bytes
+        if (null != bcast) cachedSerializedBroadcast(shuffleId) = bcast
+      } else {
+        logInfo("Epoch changed, not caching!")
+        removeBroadcast(bcast)
+      }
+    }
+    bytes
+  }
+}
+```
 
 # 引用：
 1. [spark学习-35-Spark的Map任务输出跟踪器MapOutputTracker](https://blog.csdn.net/qq_21383435/article/details/78603123)

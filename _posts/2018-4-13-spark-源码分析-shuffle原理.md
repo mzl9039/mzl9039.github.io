@@ -234,15 +234,23 @@ override def write(records: Iterator[Product2[K, V]]): Unit = {
   }
   /** 将 records 代表的 rdd 的 partition 信息保存到 sorter 内部的 map/buffer */
   /** 若 sorter 内保存的 partition 信息过大，则会 spill 到磁盘 */
+  /** 这里如果写磁盘了，文件名则是 temp_shuffle_uuid */
   sorter.insertAll(records)
 
   /** Don't bother including the time to open the merged output file in the shuffle write time, */
   /** because it just opens a single file, so is typically too fast to measure accurately */
   /** (see SPARK-3570). */
+  /** 这里会根据 shuffleId 和 mapId 获取原来的数据文件或新创建数据文件, 从前面 insertAll 的逻辑来看，第一次运行到这里时，是新建数据文件的 */
+  /** 这里的文件名是 shuffleId_mapId_0_reduceId.data */
+  /** IndexShuffleBlockResolver 中写明了：disk store 计划存储与 (map, reduce) 相关的 pair, 但在基于排序的、用于多个 reduce 的 shuffle output 会被拼凑成单个文件?  */
+  /** TODO：上面是翻译错了？这么做的原因是什么呢? */
   val output = shuffleBlockResolver.getDataFile(dep.shuffleId, mapId)
+  /** TODO: 这个 tempFileWith 方法要求的参数是一个 path，那 output 到底是一个路径还是一个文件呢? */
   val tmp = Utils.tempFileWith(output)
   try {
+    /** 根据 shuffleId mapId 拿到 blockId, 这一步是关键，前面获取到 output 内部也是一样的方式 */
     val blockId = ShuffleBlockId(dep.shuffleId, mapId, IndexShuffleBlockResolver.NOOP_REDUCE_ID)
+    /** 这里是合并写入的地方, 详细内容见后面的分析 */
     val partitionLengths = sorter.writePartitionedFile(blockId, tmp)
     shuffleBlockResolver.writeIndexFileAndCommit(dep.shuffleId, mapId, partitionLengths, tmp)
     mapStatus = MapStatus(blockManager.shuffleServerId, partitionLengths)
@@ -624,7 +632,7 @@ private var streamOpen = false
 private var hasBeenClosed = false
 
 /** Cursors used to represent positions in the file. */
-/** */
+/** 描述文件中当前位置的 cursor */
 /** xxxxxxxxxx|----------|-----| */
 /**           ^          ^     ^ */
 /**           |          |    channel.position() */
@@ -632,7 +640,9 @@ private var hasBeenClosed = false
 /**         committedPosition */
 /** */
 /** reportedPosition: Position at the time of the last update to the write metrics. */
+/**                   上次更新后更新到 write metrics 的位置 */
 /** committedPosition: Offset after last committed write. */
+/**                    已经提交 write 的 offset */
 /** -----: Current writes to the underlying file. */
 /** xxxxx: Committed contents of the file. */
 private var committedPosition = file.length()
@@ -651,6 +661,7 @@ private def initialize(): Unit = {
   mcs = new ManualCloseBufferedOutputStream
 }
 
+/** 只能 open 一次，且不能 reopen */
 def open(): DiskBlockObjectWriter = {
   if (hasBeenClosed) {
     throw new IllegalStateException("Writer already closed. Cannot be reopened.")
@@ -668,8 +679,9 @@ def open(): DiskBlockObjectWriter = {
 
 /** Flush the partial writes and commit them as a single atomic block. */
 /** A commit may write additional bytes to frame the atomic block. */
-/** */
+/** 指部分写入的内容提交到一个单独的原子 block */
 /** @return file segment with previous offset and length committed on this call. */
+/** 每次调用都会返回一个 FileSegment */
 def commitAndGet(): FileSegment = {
   if (streamOpen) {
     /** NOTE: Because Kryo doesn't flush the underlying stream we explicitly flush both the */
@@ -679,8 +691,10 @@ def commitAndGet(): FileSegment = {
     objOut.close()
     streamOpen = false
 
+    /** syncWrites 黑夜为 false */
     if (syncWrites) {
       /** Force outstanding writes to disk and track how long it takes */
+      /** 强制将写入的内容落到磁盘，并记录落盘的时间长短 */
       val start = System.nanoTime()
       fos.getFD.sync()
       writeMetrics.incWriteTime(System.nanoTime() - start)
@@ -702,7 +716,7 @@ def commitAndGet(): FileSegment = {
 /** Reverts writes that haven't been committed yet. Callers should invoke this function */
 /** when there are runtime exceptions. This method will not throw, though it may be */
 /** unsuccessful in truncating written data. */
-/** */
+/** revert 那些还没提交的写入内容。 */
 /** @return the file that this DiskBlockObjectWriter wrote to. */
 def revertPartialWritesAndClose(): File = {
   /** Discard current writes. We do this by flushing the outstanding writes and then */
@@ -754,7 +768,9 @@ override def write(kvBytes: Array[Byte], offs: Int, len: Int): Unit = {
 }
 
 /** Notify the writer that a record worth of bytes has been written with OutputStream#write. */
+/** 通知 writer: 一条记录已经被写入 OutputStream */
 def recordWritten(): Unit = {
+  /** 每次都会记录一次 numRecordsWritten */
   numRecordsWritten += 1
   writeMetrics.incRecordsWritten(1)
 
@@ -769,6 +785,141 @@ private def updateBytesWritten() {
   val pos = channel.position()
   writeMetrics.incBytesWritten(pos - reportedPosition)
   reportedPosition = pos
+}
+```
+
+##### ExternalSorter 的 writePartitionedFile 方法
+
+这里方法是把 ExternalSorter 里已经记录的所有数据写入到一个文件，注意的是，如果这些数据没有排序过，会先排序; 另外如果有部分数据因为内存不够而已经写到磁盘，
+会把这些文件先合并
+
+```scala
+/** Write all the data added into this ExternalSorter into a file in the disk store. This is */
+/** called by the SortShuffleWriter. */
+/** 将所有加入 ExternalSorter 的数据写入一个文件。 */
+/** @param blockId block ID to write to. The index file will be blockId.name + ".index". */
+/** @return array of lengths, in bytes, of each partition of the file (used by map output tracker) */
+/** 返回值是一个数组，数组的每一项都是这个方法中输出的文件中某个 partition 的长度 (in bytes), 后面被 map output tracker 使用 */
+def writePartitionedFile(
+    blockId: BlockId,
+    outputFile: File): Array[Long] = {
+
+  /** Track location of each range in the output file */
+  /** 追踪文件中每个 partition 的 length */
+  val lengths = new Array[Long](numPartitions)
+  val writer = blockManager.getDiskWriter(blockId, outputFile, serInstance, fileBufferSize,
+    context.taskMetrics().shuffleWriteMetrics)
+
+  /** 如果原来的 map/buffer 已经有一总分写磁盘了，则 spills 不为空，否则为空 */
+  if (spills.isEmpty) {
+    /** Case where we only have in-memory data */
+    /** 如果内存够大，所有数据都在内存中，没 spill 到磁盘过 */
+    val collection = if (aggregator.isDefined) map else buffer
+    /** 获取加入 ExternalSorter 的数据的集合的迭代器, 这个方法我们前面已经分析过 */
+    val it = collection.destructiveSortedWritablePartitionedIterator(comparator)
+    while (it.hasNext) {
+      val partitionId = it.nextPartition()
+      /** while 里的判断，可能是为了避免多线程时，前后句之间有线程执行了 it.next */
+      while (it.hasNext && it.nextPartition() == partitionId) {
+        it.writeNext(writer)
+      }
+      /** 这里可以看出，每个 partition 提交一次, 注意这里没有 flush */
+      val segment = writer.commitAndGet()
+      lengths(partitionId) = segment.length
+    }
+  } else {
+    /** We must perform merge-sort; get an iterator by partition and write everything directly. */
+    /** 如果已经有部分数据写磁盘了 */
+    for ((id, elements) <- this.partitionedIterator) {
+      if (elements.hasNext) {
+        for (elem <- elements) {
+          writer.write(elem._1, elem._2)
+        }
+        val segment = writer.commitAndGet()
+        lengths(id) = segment.length
+      }
+    }
+  }
+
+  writer.close()
+  context.taskMetrics().incMemoryBytesSpilled(memoryBytesSpilled)
+  context.taskMetrics().incDiskBytesSpilled(diskBytesSpilled)
+  context.taskMetrics().incPeakExecutionMemory(peakMemoryUsedBytes)
+
+  lengths
+}
+```
+
+###### ExternalSorter 的 partitionedIterator 方法
+
+这个方法最终就是返回当前对象中的所有数据的迭代器，这个迭代器以 partition 为单位
+
+```scala
+/** Return an iterator over all the data written to this object, grouped by partition and */
+/** aggregated by the requested aggregator. For each partition we then have an iterator over its */
+/** contents, and these are expected to be accessed in order (you can't "skip ahead" to one */
+/** partition without reading the previous one). Guaranteed to return a key-value pair for each */
+/** partition, in order of partition ID. */
+/** 返回所有写入这个对象的数据的迭代器，按 partition 分组，并根据请求的 aggregator 进行聚合。对每个 partition, 我们都有一个迭代器来遍历它， */
+/** 这些 partition 将会被按顺序访问，不能跳跃。保证返回一个 key-value pair，安排好 partition ID 排序 */
+/** For now, we just merge all the spilled files in once pass, but this can be modified to */
+/** support hierarchical merging. */
+/** Exposed for testing. */
+def partitionedIterator: Iterator[(Int, Iterator[Product2[K, C]])] = {
+  /** 这里只在决定当前对象使用的是 map 还是 buffer */
+  val usingMap = aggregator.isDefined
+  val collection: WritablePartitionedPairCollection[K, C] = if (usingMap) map else buffer
+  /** 若 spills 为 empty, 说明之前没有数据被  spill 到磁盘; 否则有数据被 spill 到磁盘 */
+  if (spills.isEmpty) {
+    /** Special case: if we have only in-memory data, we don't need to merge streams, and perhaps */
+    /** we don't even need to sort by anything other than partition ID */
+    /** 特殊情况：如果我们只有内存中的数据，我们不需要把不同的 streams merge 到一起，甚至我们除了 partition ID 外，不需要按其它任何东西排序 */
+    /** 如果 ordering 定义过，除了需要按照 partition ID 排序外，还需要按照 key 排序；否则只需要按照 partition ID 排序 */
+    if (!ordering.isDefined) {
+      /** The user hasn't requested sorted keys, so only sort by partition ID, not key */
+      groupByPartition(destructiveIterator(collection.partitionedDestructiveSortedIterator(None)))
+    } else {
+      /** We do need to sort by both partition ID and key */
+      groupByPartition(destructiveIterator(
+        collection.partitionedDestructiveSortedIterator(Some(keyComparator))))
+    }
+  } else {
+    /** Merge spilled and in-memory data */
+    /** 当已经有数据 spill 到磁盘，则把 spill 到磁盘上的数据，和内存中的数据 merge 到一起 */
+    merge(spills, destructiveIterator(
+      collection.partitionedDestructiveSortedIterator(comparator)))
+  }
+}
+```
+
+###### ExternalSorter 的 groupByPartition 方法
+
+```scala
+/** Given a stream of ((partition, key), combiner) pairs *assumed to be sorted by partition ID*, */
+/** group together the pairs for each partition into a sub-iterator. */
+/** @param data an iterator of elements, assumed to already be sorted by partition ID */
+private def groupByPartition(data: Iterator[((Int, K), C)])
+    : Iterator[(Int, Iterator[Product2[K, C]])] =
+{
+  val buffered = data.buffered
+  (0 until numPartitions).iterator.map(p => (p, new IteratorForPartition(p, buffered)))
+}
+
+/** An iterator that reads only the elements for a given partition ID from an underlying buffered */
+/** stream, assuming this partition is the next one to be read. Used to make it easier to return */
+/** partitioned iterators from our in-memory collection. */
+private[this] class IteratorForPartition(partitionId: Int, data: BufferedIterator[((Int, K), C)])
+  extends Iterator[Product2[K, C]]
+{
+  override def hasNext: Boolean = data.hasNext && data.head._1._1 == partitionId
+
+  override def next(): Product2[K, C] = {
+    if (!hasNext) {
+      throw new NoSuchElementException
+    }
+    val elem = data.next()
+    (elem._1._2, elem._2)
+  }
 }
 ```
 

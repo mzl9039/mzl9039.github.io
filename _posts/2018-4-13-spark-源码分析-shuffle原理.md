@@ -84,6 +84,11 @@ shuffle data 的 shuffleBlockId 和 reduce ID 作用名字，".data" 是文件�
 18. DiskBlockObjectWriter: 将 JVM 中的对象直接写入文件的类。这个类允许把数据追加到已经存在的 block。为了效率，它持有底层的文件通道。这个通道会保持 open 状态，
 直到 DiskBlockObjectWriter 的 close() 方法被调用。为了防止出现错误(如正在写的过程中出错了), 调用者需要调用方法 revertPartialWritesAndClose 而不是 close 方法，
 来自动 revert 那些未提交的 write 操作。
+19. ShuffleBlockFetcherIterator: 一个获取多个 blocks 的迭代器。对于本地的 blocks, 它会从本地的 blockManager 拉取；对于远程的 blocks, 它使用 BlockTransferService
+来拉取。它会创建一个 (BlockId, InputStream) 这样的 tuple 的迭代器，以保证调用者要接收到数据时像流水线一样。另外它能限制从远程拉取的速度，来保证拉取时不会
+超过 maxBytesInFlight, 从而不会使用太多内存.
+20. ShuffleClient: 读取 shuffle file 的接口，即可以是 Executor 端也可以是外部 service 端
+21. NettyBlockTransferService: 使用 netty 来一次拉取多个 blocks 的一个 BlockTransferService, 是 ShuffleClient 的子类。
 
 ## Spark shuffle 的流程
 
@@ -380,7 +385,7 @@ protected def maybeSpill(collection: C, currentMemory: Long): Boolean = {
 
 注意：在 ExternalAppendOnlyMap 类中也有一样的 spill 方法，因为那个类和 ExternalSorter 很像。
 
-spill 方法如下：
+spill 方法如下
 
 ```scala
 /** Spill our in-memory collection to a sorted file that we can merge later. */
@@ -894,6 +899,9 @@ def partitionedIterator: Iterator[(Int, Iterator[Product2[K, C]])] = {
 
 ###### ExternalSorter 的 groupByPartition 方法
 
+方法 groupByPartition 写的很明确，参数是一个迭代器，里面每个项都是 ((partition, key), combiner) 这样的类型，而且这些数据
+已经按照 partition ID 完成排序. 这里要把这些数据里的每个 partition 组合为 (partition, (key, combiner)) 这样的类型
+
 ```scala
 /** Given a stream of ((partition, key), combiner) pairs *assumed to be sorted by partition ID*, */
 /** group together the pairs for each partition into a sub-iterator. */
@@ -923,9 +931,508 @@ private[this] class IteratorForPartition(partitionId: Int, data: BufferedIterato
 }
 ```
 
-### Spark shuffle 元数据的消息传递
+###### ExternalSorter 的 merge 方法
+
+在 partitionedIterator 中，若 spills.isEmpty 为 false, 即已经有部分数据已经写入到磁盘，则需要调用 merge 方法，
+将还在内存中的数据和磁盘上的数据进行 merge 操作，最终返回一个按 partition 分组的，对所有写入当前对象的数据
+都可以访问的迭代器（注意这些数据可以同时在磁盘和内存中）
+
+```scala
+/** Merge a sequence of sorted files, giving an iterator over partitions and then over elements */
+/** inside each partition. This can be used to either write out a new file or return data to */
+/** the user. */
+/** */
+/** Returns an iterator over all the data written to this object, grouped by partition. For each */
+/** partition we then have an iterator over its contents, and these are expected to be accessed */
+/** in order (you can't "skip ahead" to one partition without reading the previous one). */
+/** Guaranteed to return a key-value pair for each partition, in order of partition ID. */
+private def merge(spills: Seq[SpilledFile], inMemory: Iterator[((Int, K), C)])
+    : Iterator[(Int, Iterator[Product2[K, C]])] = {
+  /** 磁盘上的文件中的数据的读取访问，通过 SpillReader 完成, 所以这里每个文件生成一个 reader */
+  val readers = spills.map(new SpillReader(_))
+  val inMemBuffered = inMemory.buffered
+  /** 以 partition 来分组，所以按 partition 的个数来 iterator */
+  (0 until numPartitions).iterator.map { p =>
+    /** 注意这里 p 是 partition 的 id， 即 partitionId */
+    /** 内存中的数据的遍历，通过 IteratorForPartition 完成,这里生成内存中数据访问的迭代器 */
+    val inMemIterator = new IteratorForPartition(p, inMemBuffered)
+    /** 文件中的数据的访问，通过 reader 的方法 readNextPartition 生成迭代器，和内存中的数据的迭代器一起，形成最终的迭代器 */
+    val iterators = readers.map(_.readNextPartition()) ++ Seq(inMemIterator)
+    /** 如果定义了聚合，则需要 mergeWithAggregation */
+    /** TODO:这里不会同时定义，对么? 或者说，只需要其中一个就可以了，比如聚合定义了，排序就没有意义了? */
+    if (aggregator.isDefined) {
+      /** Perform partial aggregation across partitions */
+      (p, mergeWithAggregation(
+        iterators, aggregator.get.mergeCombiners, keyComparator, ordering.isDefined))
+    } else if (ordering.isDefined) {
+      /** No aggregator given, but we have an ordering (e.g. used by reduce tasks in sortByKey); */
+      /** sort the elements without trying to merge them */
+      /** 如果定义了排序，则需要 mergeSort */
+      (p, mergeSort(iterators, ordering.get))
+    } else {
+      (p, iterators.iterator.flatten)
+    }
+  }
+}
+```
+
+###### Spillable 的 readNextPartition 方法
+
+这里返回当前 Spillable 对应的 SpilledFile 中所有的 partition 的 (key, combiner) 的迭代器
+
+```scala
+/** 由这个方法看出，这里尝试读取下一个 partition, 而方法的关键，在于 readNextItem, 这里返回的是下一个 partition 的 (k, c) pair */
+var nextPartitionToRead = 0
+
+def readNextPartition(): Iterator[Product2[K, C]] = new Iterator[Product2[K, C]] {
+  val myPartition = nextPartitionToRead
+  nextPartitionToRead += 1
+
+  override def hasNext: Boolean = {
+    if (nextItem == null) {
+      nextItem = readNextItem()
+      if (nextItem == null) {
+        return false
+      }
+    }
+    assert(lastPartitionId >= myPartition)
+    /** Check that we're still in the right partition; note that readNextItem will have returned */
+    /** null at EOF above so we would've returned false there */
+    lastPartitionId == myPartition
+  }
+
+  override def next(): Product2[K, C] = {
+    if (!hasNext) {
+      throw new NoSuchElementException
+    }
+    val item = nextItem
+    nextItem = null
+    item
+  }
+}
+
+/** Return the next (K, C) pair from the deserialization stream and update partitionId, */
+/** indexInPartition, indexInBatch and such to match its location. */
+/** 由于数据 spill 到磁盘上的时候，每个 SpilledFile 文件记录了这个 SpilledFile 文件的大小，及其在文件中的 offset(以 byte 为单位)， */
+/** 因为写磁盘的时候，每 flush 一次，会将先前的写入提交一次，从而生成一个 FileSegment，这个 FileSegment 记录了这次提交的数据量的大小(以 byte 为单位) */
+/** 对应到物理机上，其实多个 SpilledFile 是同一个文件；所以可以根据 offset, 很容易地定义到需要获取的文件流的起始位置与结束位置, */
+/** 这是 nextBatchStream 这个方法的底层原理 */
+/** SpilledFile 的属性 elementsPerPartition 是同一个 SpilledFile 中，相同的 partition 被访问了几次，注意这里相同的 partition 可能进同一个 SpilledFile */
+/** If the current batch is drained, construct a stream for the next batch and read from it. */
+/** If no more pairs are left, return null. */
+/** 这里从磁盘文件中读取一个 stream, 这个 stream 对应一个 batch, 一个 batch 在文件中对应一个 FileSegment, 由于一个 FileSegment 有多个 partition */
+/** 这里在 indexInBatch 等于 serializerBatchSize 时，才读取下一个 batch, 否则一直在当前的 batch stream 中读取下一个 partition */
+private def readNextItem(): (K, C) = {
+  if (finished || deserializeStream == null) {
+    return null
+  }
+  /** 从 stream 中读取一个 partition 的 key 和 combiner */
+  val k = deserializeStream.readKey().asInstanceOf[K]
+  val c = deserializeStream.readValue().asInstanceOf[C]
+  lastPartitionId = partitionId
+  /** Start reading the next batch if we're done with this one */
+  indexInBatch += 1
+  if (indexInBatch == serializerBatchSize) {
+    indexInBatch = 0
+    deserializeStream = nextBatchStream()
+  }
+  /** Update the partition location of the element we're reading */
+  indexInPartition += 1
+  skipToNextPartition()
+  /** If we've finished reading the last partition, remember that we're done */
+  if (partitionId == numPartitions) {
+    finished = true
+    if (deserializeStream != null) {
+      deserializeStream.close()
+    }
+  }
+  (k, c)
+}
+
+/** Construct a stream that only reads from the next batch */
+def nextBatchStream(): DeserializationStream = {
+  /** Note that batchOffsets.length = numBatches + 1 since we did a scan above; check whether */
+  /** we're still in a valid batch. */
+  /** 由于上面调用 scanLeft(0)(_ + _), 所以 batchOffsets 要比 numBatches 大 1, 所以这里检查当前是否是个有效的 batch */
+  if (batchId < batchOffsets.length - 1) {
+    if (deserializeStream != null) {
+      deserializeStream.close()
+      fileStream.close()
+      deserializeStream = null
+      fileStream = null
+    }
+
+    /** 由于 batchOffsets 是由不同的 batch 的 size 这个数组逐渐累加的(scanLeft(0L)(_ + _))，类似于斐波那契数列一样, */
+    /** 所以根据 batchId 即可前面多个 batch size 相加后的和，即当前 batchId 的起始 offset */
+    val start = batchOffsets(batchId)
+    fileStream = new FileInputStream(spill.file)
+    /** 由于拿到了当前 batchId 的 start，因此能一次性定义到位置 */
+    fileStream.getChannel.position(start)
+    batchId += 1
+
+    val end = batchOffsets(batchId)
+
+    assert(end >= start, "start = " + start + ", end = " + end +
+      ", batchOffsets = " + batchOffsets.mkString("[", ", ", "]"))
+
+    val bufferedStream = new BufferedInputStream(ByteStreams.limit(fileStream, end - start))
+
+    val wrappedStream = serializerManager.wrapStream(spill.blockId, bufferedStream)
+    serInstance.deserializeStream(wrappedStream)
+  } else {
+    /** No more batches left */
+    cleanup()
+    null
+  }
+}
+
+/** Update partitionId if we have reached the end of our current partition, possibly skipping */
+/** empty partitions on the way. */
+/** 这个方法用在跳过空的 partition(如在 Spillable 初始化时调用过)时，以及用在到当前 partition 的尾部时 */
+/** 更新并记录当前对象的 partitionId 和 indexInPartition 信息, 以便后续使用 */
+private def skipToNextPartition() {
+  while (partitionId < numPartitions &&
+      indexInPartition == spill.elementsPerPartition(partitionId)) {
+    partitionId += 1
+    indexInPartition = 0L
+  }
+}
+```
+
+###### ExternalSorter 的 mergeWithAggregation 方法
+
+这个方法主要是对结果进行聚合，即根据参数 mergeCombiners 对相同 key 的 partition 执行 combiner 操作。
+由于结果可能已经按 key 排序过，所以要区分是否已经 totalOrder.
+
+由方法可知,这里返回的结果，都是通过 mergeSort 进行排序后的结果, 所以 mergeSort 方法决定了 next 的顺序
+
+```scala
+/** Merge a sequence of (K, C) iterators by aggregating values for each key, assuming that each */
+/** iterator is sorted by key with a given comparator. If the comparator is not a total ordering */
+/** (e.g. when we sort objects by hash code and different keys may compare as equal although */
+/** they're not), we still merge them by doing equality tests for all keys that compare as equal. */
+/** 根据要聚合的值，为每个 key (对应一个 partition),将一个序列的 iterator 聚合到一起. 假定每个 */
+/** iterator 按给定的 comparator 对 key 进行排序 */
+private def mergeWithAggregation(
+    iterators: Seq[Iterator[Product2[K, C]]],
+    mergeCombiners: (C, C) => C,
+    comparator: Comparator[K],
+    totalOrder: Boolean)
+    : Iterator[Product2[K, C]] =
+{
+  /** totalOrder: orderging 是否定义过 */
+  if (!totalOrder) {
+    /** We only have a partial ordering, e.g. comparing the keys by hash code, which means that */
+    /** multiple distinct keys might be treated as equal by the ordering. To deal with this, we */
+    /** need to read all keys considered equal by the ordering at once and compare them. */
+    new Iterator[Iterator[Product2[K, C]]] {
+      /** 初始化时要根据 comparator 对 iterator 中的 key 进行排序 */
+      val sorted = mergeSort(iterators, comparator).buffered
+
+      /** Buffers reused across elements to decrease memory allocation */
+      /** 这里使用 ArrayBuffer 是为了减少内存分配 */
+      /** 其中 keys 用来存储 iterator 中的 key, combiners 用来存储其中的 combiner */
+      val keys = new ArrayBuffer[K]
+      val combiners = new ArrayBuffer[C]
+
+      override def hasNext: Boolean = sorted.hasNext
+
+      override def next(): Iterator[Product2[K, C]] = {
+        if (!hasNext) {
+          throw new NoSuchElementException
+        }
+        /** 为后面的 merge 做准备 */
+        keys.clear()
+        combiners.clear()
+        /** 获取第一个 pair */
+        val firstPair = sorted.next()
+        keys += firstPair._1
+        combiners += firstPair._2
+        val key = firstPair._1
+        /** 这里遍历 iterator，获取所有的 (K, C) */
+        while (sorted.hasNext && comparator.compare(sorted.head._1, key) == 0) {
+          /** 如果有下一个 pair,则获取下一个 pair */
+          val pair = sorted.next()
+          var i = 0
+          var foundKey = false
+          /** 对下一个 pair, 从 i=0 开始遍历 keys, 如果能找到和 pair 相同的 key, 则 merge, 否则继续遍历 */
+          while (i < keys.size && !foundKey) {
+            /** 如果 pair 的 key 与 keys(i) 相同，则进行 merge, 则设置 foundKey 为true, 即不再循环; 否则继续遍历 */
+            if (keys(i) == pair._1) {
+              /** 这里的 mergeCombiners 是参数，也是一个方法，这里是调用方法完成对相同 key 的 merge */
+              combiners(i) = mergeCombiners(combiners(i), pair._2)
+              foundKey = true
+            }
+            i += 1
+          }
+          /** 如果遍历 keys 都没有找到相同的 key, 则添加到 keys 和 combiners 中去 */
+          if (!foundKey) {
+            keys += pair._1
+            combiners += pair._2
+          }
+        }
+
+        /** Note that we return an iterator of elements since we could've had many keys marked */
+        /** equal by the partial order; we flatten this below to get a flat iterator of (K, C). */
+        keys.iterator.zip(combiners.iterator)
+      }
+    }.flatMap(i => i)
+  } else {
+    /** We have a total ordering, so the objects with the same key are sequential. */
+    /** 如果 totalOrder 为 True, 即已经排过序，相同的 key 已经是一个序列的了，则直接根据 comparator 对 partition 进行排序即可 */
+    new Iterator[Product2[K, C]] {
+      val sorted = mergeSort(iterators, comparator).buffered
+
+      override def hasNext: Boolean = sorted.hasNext
+
+      /** 这个方法的逻辑与 totalOrder 为 false 时很类似，但要简单一些，在此跳过 */
+      override def next(): Product2[K, C] = {
+        if (!hasNext) {
+          throw new NoSuchElementException
+        }
+        val elem = sorted.next()
+        val k = elem._1
+        var c = elem._2
+        while (sorted.hasNext && sorted.head._1 == k) {
+          val pair = sorted.next()
+          c = mergeCombiners(c, pair._2)
+        }
+        (k, c)
+      }
+    }
+  }
+}
+```
+
+###### ExternalSorter 的 mergeSort 方法
+
+这个方法主要是根据 comparator 按 key 对 iterator 进行归并排序
+
+```scala
+/** Merge-sort a sequence of (K, C) iterators using a given a comparator for the keys. */
+private def mergeSort(iterators: Seq[Iterator[Product2[K, C]]], comparator: Comparator[K])
+    : Iterator[Product2[K, C]] =
+{
+  val bufferedIters = iterators.filter(_.hasNext).map(_.buffered)
+  type Iter = BufferedIterator[Product2[K, C]]
+  val heap = new mutable.PriorityQueue[Iter]()(new Ordering[Iter] {
+    /** Use the reverse of comparator.compare because PriorityQueue dequeues the max */
+    override def compare(x: Iter, y: Iter): Int = -comparator.compare(x.head._1, y.head._1)
+  })
+  heap.enqueue(bufferedIters: _*)  /** Will contain only the iterators with hasNext = true */
+  new Iterator[Product2[K, C]] {
+    override def hasNext: Boolean = !heap.isEmpty
+
+    override def next(): Product2[K, C] = {
+      if (!hasNext) {
+        throw new NoSuchElementException
+      }
+      val firstBuf = heap.dequeue()
+      val firstPair = firstBuf.next()
+      if (firstBuf.hasNext) {
+        heap.enqueue(firstBuf)
+      }
+      firstPair
+    }
+  }
+}
+```
 
 ### Spark shuffle 的读取
+
+我们在 RDD 的 iterator 方法中，已经介绍了，对于 ShuffledRDD 的 iterator 方法，是在 ResultTask 的 runTask 中触发的，该方法
+这里不再介绍，但 ShuffledRDD 的 iterator 方法，会获取 ShuffleReader 的一个实例，并调用其 read 方法来读取已经 combine 过的
+key-value 数据。compute 方法在 RDD 的 iterator 方法中已经有介绍，这里继续分析 ShuffleReader 的 read 方法。
+
+#### BlockStoreShuffleReader 的 read 方法
+
+当前的 spark 版本中，ShuffleReader 只有一个版本的实现: BlockStoreShuffleReader. 同时，由于数据的 shuffle 和 combine 在
+shuffle 写入时已经完成，所以 shuffleReader 看起来并没有多少优化的空间，只需要将 combine 过后的数据拉到 reduce 执行的节点
+进行最后的结果计算，即 ResultTask 的 runTask 最后一行:`func(context, rdd.iterator(partition, context))`, 在这里，rdd.iterator
+会调用 rdd 的 compute 方法，由于当前的 rdd 是 ShuffledRDD(LogQuery 的 reduceByKey), 所以在其 compute 方法中会实例化这个
+BlockStoreShuffleReader 来获得 shuffleReader
+
+```scala
+/** Read the combined key-values for this reduce task */
+/** 为当前的 reduce task 读取已经在 map task 中 combine 过的 key-value 值 */
+override def read(): Iterator[Product2[K, C]] = {
+  /** 由于 map task 中的结果存储在 block 中，这里返回拉取 block 的迭代器, 以读取 map 端的结果 */
+  /** 关于这个类，后面详细分析 */
+  val blockFetcherItr = new ShuffleBlockFetcherIterator(
+    context,
+    blockManager.shuffleClient,
+    blockManager,
+    /** 我们知道 shuffle 写入完成后，返回的是 MapStatus, 而 mapOutputTracker 就是用来追踪 mapStatus 的 */
+    mapOutputTracker.getMapSizesByExecutorId(handle.shuffleId, startPartition, endPartition),
+    /** Note: we use getSizeAsMb when no suffix is provided for backwards compatibility */
+    SparkEnv.get.conf.getSizeAsMb("spark.reducer.maxSizeInFlight", "48m") * 1024 * 1024,
+    SparkEnv.get.conf.getInt("spark.reducer.maxReqsInFlight", Int.MaxValue))
+
+  /** Wrap the streams for compression and encryption based on configuration */
+  /** 如果需要压缩或数据加密需求，则在这里将输入流添加一层 wrap, 思想类似于装饰者模式 */
+  val wrappedStreams = blockFetcherItr.map { case (blockId, inputStream) =>
+    serializerManager.wrapStream(blockId, inputStream)
+  }
+
+  val serializerInstance = dep.serializer.newInstance()
+
+  /** Create a key/value iterator for each stream */
+  /** 将输入流 wrappedStreams 逆序列化，map 成 key/value 形式的迭代器 */
+  val recordIter = wrappedStreams.flatMap { wrappedStream =>
+    /** Note: the asKeyValueIterator below wraps a key/value iterator inside of a */
+    /** NextIterator. The NextIterator makes sure that close() is called on the */
+    /** underlying InputStream when all records have been read. */
+    /** 由于前面的 wrappedStream 是流，所以读取完成需要关闭，这里 asKeyValueIterator 会在读取完成后关闭流 */
+    serializerInstance.deserializeStream(wrappedStream).asKeyValueIterator
+  }
+
+  /** Update the context task metrics for each record read. */
+  /** 这里定义了 metricIter, 其实是要在 recordIter 读取完成后自动调用 mergeShuffleReadMetrics 方法, 理解成是对 recordIter 的一种包装 */
+  val readMetrics = context.taskMetrics.createTempShuffleReadMetrics()
+  val metricIter = CompletionIterator[(Any, Any), Iterator[(Any, Any)]](
+    recordIter.map { record =>
+      readMetrics.incRecordsRead(1)
+      record
+    },
+    context.taskMetrics().mergeShuffleReadMetrics())
+
+  /** An interruptible iterator must be used here in order to support task cancellation */
+  /** 又对 metricIter 加了一层包装，支持了 interrupt */
+  val interruptibleIter = new InterruptibleIterator[(Any, Any)](context, metricIter)
+
+  /** 如果定义了聚合函数，则根据需要进行聚合；否则直接 asInstanceOf 即可 */
+  val aggregatedIter: Iterator[Product2[K, C]] = if (dep.aggregator.isDefined) {
+    /** 根据 map 端已经 combine, 将 interruptibleIter 转化为不同的类型，然后进行 reduce 端的 combine */
+    if (dep.mapSideCombine) {
+      /** We are reading values that are already combined */
+      /** 读取已经 combine 过的结果, 然后再对 combiners 进行 combine, 注意这里是对 combiner 进行 combine, 不是对 values */
+      val combinedKeyValuesIterator = interruptibleIter.asInstanceOf[Iterator[(K, C)]]
+      dep.aggregator.get.combineCombinersByKey(combinedKeyValuesIterator, context)
+    } else {
+      /** We don't know the value type, but also don't care -- the dependency *should* */
+      /** have made sure its compatible w/ this aggregator, which will convert the value */
+      /** type to the combined type C */
+      /** 如果 map 端没有 combine 过，则需要对 values 进行 combine */
+      val keyValuesIterator = interruptibleIter.asInstanceOf[Iterator[(K, Nothing)]]
+      dep.aggregator.get.combineValuesByKey(keyValuesIterator, context)
+    }
+  } else {
+    require(!dep.mapSideCombine, "Map-side combine without Aggregator specified!")
+    interruptibleIter.asInstanceOf[Iterator[Product2[K, C]]]
+  }
+
+  /** Sort the output if there is a sort ordering defined. */
+  /** 如果需要对结果进行排序，则使用 ExternalSorter 进行排序，由于前面经过了 combine, map 端之前可能的排序已被打乱了 */
+  dep.keyOrdering match {
+    case Some(keyOrd: Ordering[K]) =>
+      /** Create an ExternalSorter to sort the data. Note that if spark.shuffle.spill is disabled, */
+      /** the ExternalSorter won't spill to disk. */
+      /** 这里使用 ExternalSorter 对数据进行排序，前面对 ExternalSorter 有过较为详细地分析，这里的排序可能会 spill 到磁盘 */
+      val sorter =
+        new ExternalSorter[K, C, C](context, ordering = Some(keyOrd), serializer = dep.serializer)
+      sorter.insertAll(aggregatedIter)
+      /** spark 会对这个外部排序的过程记录使用的内在/磁盘大小，所以只要能获取到 metrics, 就知道这个过程占用多大的空间 */
+      context.taskMetrics().incMemoryBytesSpilled(sorter.memoryBytesSpilled)
+      context.taskMetrics().incDiskBytesSpilled(sorter.diskBytesSpilled)
+      context.taskMetrics().incPeakExecutionMemory(sorter.peakMemoryUsedBytes)
+      CompletionIterator[Product2[K, C], Iterator[Product2[K, C]]](sorter.iterator, sorter.stop())
+    case None =>
+      aggregatedIter
+  }
+}
+```
+
+#### ShuffleBlockFetcherIterator 的 next 方法
+
+ShuffleBlockFetcherIterator 类本身是一个迭代器，用来一次拉取一些 blocks. 它不只能一些拉取多个 blocks, 还会限制拉取 blocks
+的最大值，从而保证拉取的 block 不会占用大量内存，即起到加速的效果，又有限制作用。这个类重要的方法主要有初始化方法 initialize
+和读取下一批 block 的 next 方法
+
+```scala
+private[this] def initialize(): Unit = {
+  /** Add a task completion callback (called in both success case and failure case) to cleanup. */
+  /** 添加任务的监听事件，确保释放所有的 buffer, 不论是否成功地获取到了结果，都会释放 */
+  context.addTaskCompletionListener(_ => cleanup())
+
+  /** Split local and remote blocks. */
+  /** 这里会区别要拉取的 block 是本地还是远程，本地的通过本地的 blockManager 去拉； */
+  /** 远程的 block, 根据 block 的 size，确保每个请求要拉取的 blocks 的 size 总和超过 targetRequestSize */
+  /** 这里根据 size 大小相加，当 size 大小超过 targetRequestSize 时，封装成一个请求 */
+  /** 这就保证了一个请求要拉取的数据量不会太大，也不会太小，超到一个限制最大最小的作用 */
+  val remoteRequests = splitLocalRemoteBlocks()
+  /** Add the remote requests into our queue in a random order */
+  fetchRequests ++= Utils.randomize(remoteRequests)
+  assert ((0 == reqsInFlight) == (0 == bytesInFlight),
+    "expected reqsInFlight = 0 but found reqsInFlight = " + reqsInFlight +
+    ", expected bytesInFlight = 0 but found bytesInFlight = " + bytesInFlight)
+
+  /** Send out initial requests for blocks, up to our maxBytesInFlight */
+  /** 这个方法是要保证一次发送的请求，不超过 maxBytesInFlight(是 targetRequestSize 的 5 倍) */
+  /** 即保证每次发送的拉取数据的请求，拉回来的数据占用的内存不会太大 */
+  fetchUpToMaxBytes()
+
+  val numFetches = remoteRequests.size - fetchRequests.size
+  logInfo("Started " + numFetches + " remote fetches in" + Utils.getUsedTimeMs(startTime))
+
+  /** Get Local Blocks */
+  fetchLocalBlocks()
+  logDebug("Got local blocks in " + Utils.getUsedTimeMs(startTime))
+}
+
+/** Fetches the next (BlockId, InputStream). If a task fails, the ManagedBuffers */
+/** underlying each InputStream will be freed by the cleanup() method registered with the */
+/** TaskCompletionListener. However, callers should close() these InputStreams */
+/** as soon as they are no longer needed, in order to release memory as early as possible. */
+/** */
+/** Throws a FetchFailedException if the next block could not be fetched. */
+/** 这个方法比较简单，每次返回一个结果，并再调用 fetchUpToMaxBytes 以发送足够的请求 */
+override def next(): (BlockId, InputStream) = {
+  if (!hasNext) {
+    throw new NoSuchElementException
+  }
+
+  numBlocksProcessed += 1
+  val startFetchWait = System.currentTimeMillis()
+  currentResult = results.take()
+  val result = currentResult
+  val stopFetchWait = System.currentTimeMillis()
+  shuffleMetrics.incFetchWaitTime(stopFetchWait - startFetchWait)
+
+  result match {
+    case SuccessFetchResult(_, address, size, buf, isNetworkReqDone) =>
+      if (address != blockManager.blockManagerId) {
+        shuffleMetrics.incRemoteBytesRead(buf.size)
+        shuffleMetrics.incRemoteBlocksFetched(1)
+      }
+      bytesInFlight -= size
+      if (isNetworkReqDone) {
+        reqsInFlight -= 1
+        logDebug("Number of requests in flight " + reqsInFlight)
+      }
+    case _ =>
+  }
+  /** Send fetch requests up to maxBytesInFlight */ fetchUpToMaxBytes()
+
+  result match {
+    case FailureFetchResult(blockId, address, e) =>
+      throwFetchFailedException(blockId, address, e)
+
+    case SuccessFetchResult(blockId, address, _, buf, _) =>
+      try {
+        (result.blockId, new BufferReleasingInputStream(buf.createInputStream(), this))
+      } catch {
+        case NonFatal(t) =>
+          throwFetchFailedException(blockId, address, t)
+      }
+  }
+}
+```
+
+shuffle 过程的读取内容比较简单，主要是 reduce 端的 combine 和 block 的拉取过程的逻辑。所以也写的比较简单。
+
+## 总结
+
+至此，shuffle 的写入和读取的过程基本分析完了。由于用时比较长，且难度比较大，所以存在不少错误之处，后续理解更深入之后再慢慢改正.
 
 # 引用
 1. [Spark2.x学习笔记：12、Shuffle机制](https://blog.csdn.net/chengyuqiang/article/details/78171094?locationNum=4&fps=1)

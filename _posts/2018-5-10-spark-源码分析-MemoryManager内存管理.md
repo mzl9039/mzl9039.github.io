@@ -87,12 +87,12 @@ spark 堆内内存是在启动时，通过参数 spark.executor.memory 指定的
 
 <div class="mermaid">
 graph TB
+    subgraph 释放内存
+    b1(Spark 记录对象释放内存的大小并删除对象引用)-->b2(等待 JVM 回收对象占用的堆内内存)
+    end
     subgraph 申请内存
     a1(Spark 中 new 对象实例)-->a2(JVM 分配内存并创建对象返回引用)
     a2-->a3(Spark 保存对象引用 并记录对象占用的内存)
-    end
-    subgraph 释放内存
-    b1(Spark 记录对象释放内存的大小并删除对象引用)-->b2(等待 JVM 回收对象占用的堆内内存)
     end
 </div>
 

@@ -495,7 +495,7 @@ def releaseMemory(numBytes: Long, taskAttemptId: Long): Unit = lock.synchronized
 spark 1.6 引入了统一内存管理机制，它最大的特点是：存储内存与执行内存共享同一块内存空间，可以动态占用对方的空闲区域。
 
 堆内内存的分配，如图所示：
-![UnifiedMemoryManager-onHeap](https://github.com/mzl9039/mzl9039.github.io/blob/master/styles/img/spark-unfied-memory-mode.png)
+![UnifiedMemoryManager-onHeap](https://github.com/mzl9039/mzl9039.github.io/raw/master/styles/img/spark-unfied-memory-mode.png)
 
 堆外内存分配与静态内存管理机制的默认分配一致，均为存储内存与执行内存默认各占 50%.
 

@@ -88,11 +88,11 @@ spark 堆内内存是在启动时，通过参数 spark.executor.memory 指定的
 <div class="mermaid">
 graph TB
     subgraph 申请内存
-    a1(Spark 中 new 对象实例)-->a2(JVM 分配内存，创建对象返回引用)
-    a2-->a3(Spark 保存对象引用，记录对象占用的内存)
+    a1(Spark 中 new 对象实例)-->a2(JVM 分配内存并创建对象返回引用)
+    a2-->a3(Spark 保存对象引用 并记录对象占用的内存)
     end
     subgraph 释放内存
-    b1(Spark 记录对象释放内存的大小，删除对象引用)-->b2(等待 JVM 回收对象占用的堆内内存)
+    b1(Spark 记录对象释放内存的大小并删除对象引用)-->b2(等待 JVM 回收对象占用的堆内内存)
     end
 </div>
 
@@ -177,7 +177,8 @@ def releaseUnrollMemory(numBytes: Long, memoryMode: MemoryMode): Unit
 ### StaticMemoryManager 静态内存管理
 
 静态内存管理，是指存储内存、执行内存和其它内存的大小在 spark 应用程序运行期间固定不变，但用户可以在程序启动之前配置，
-堆内内存的分配 ![如图2](https://github.com/mzl9039/mzl9039.github.io/raw/master/styles/img/spark-static-memory-mode.png)所示
+堆内内存的分配, 如图所示:
+![StaticMemoryManager](https://github.com/mzl9039/mzl9039.github.io/raw/master/styles/img/spark-static-memory-mode.png)
 
 ### UnifiedMemoryManager 统一内存管理
 

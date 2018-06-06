@@ -20,7 +20,7 @@ tags:
 <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 ```
 
-如果需要做其它设置，如通过 `\( ... \)` 识别公式等，可以添加如下配置：
+如果需要做其它设置，如通过 `\\( ... \\)` 识别行内公式等，可以添加如下配置：
 
 ```javascript
 <script type="text/x-mathjax-config">

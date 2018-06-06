@@ -34,17 +34,15 @@ MathJax.Hub.Config({
 ```
 ## 测试公式如下：
 
-行内公式: $\frac {1} {2}$
+行内公式: $\\frac {1} {2}$
 
 独立公式:
-
-    $$
+$$
     J_\alpha(x) = \sum_{m=0}^\infty \frac{(-1)^m}{m! \Gamma (m + \alpha + 1)} {\left({ \frac{x}{2} }\right)}^{2m + \alpha} \text {，独立公式示例}
-    $$
+$$
 
-代码中的公式：
+独立公式2：
 
-```
 $$ 
     f_\epsilon(p_{i,l}, p_{j,k}) = 
     \begin{cases} 
@@ -52,4 +50,3 @@ $$
     1 - \frac {dist(p_{i,l}, p_{j,k})} {\epsilon} & otherwise
     \end{cases}
 $$ 
-```

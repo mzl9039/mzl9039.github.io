@@ -16,7 +16,7 @@ tags:
 # MemoryManager 内存管理
 
 spark 是一个基于内存的分布式计算引擎，虽然 spark 也支持磁盘存储，但其主要的优势在于充分利用内存计算，因此理解它的内存管理原理非常重要。
-另外由于它本身也对内存的使用和管理进行了一系列的优化，因为理解这些优化点，对于深入理解 spark 的内存管理模型、甚至自己开发程序都很有帮助。
+另外由于它本身也对内存的使用和管理进行了一系列的优化，因此理解这些优化点，对于深入理解 spark 的内存管理模型、甚至自己开发程序都很有帮助。
 
 内存的使用和管理，个人认为可以分成两个不同的问题：
 1. 内存的管理，在于其内存模型，如何充分利用内存完成计算任务。
@@ -47,7 +47,7 @@ class StorageLevel private(
 1. 数据序列化后会连续存储，能充分利用内存空间，数据访问也更快。
 2. 数据序列化后可以精确计算数据序列化后的大小，对内存的使用更加精确。
 
-但数据序列化会带来 cpu 消耗，使用数据时还需要逆序列化为 java 对象，因为需要根据自己的需要决定。
+但数据序列化会带来 cpu 消耗，使用数据时还需要逆序列化为 java 对象，因此需要根据自己的需要决定。
 
 从而，spark 数据存储的级别有：
 
@@ -419,7 +419,7 @@ private[memory] def acquireMemory(
 
 #### MemoryManager 的 releaseStorageMemory 方法
 
-注意：MemoryManager 的 releaseUnrollMemory 的方法调用的是 releaseStorageMemory 方法，因为这里的分析跳过 
+注意：MemoryManager 的 releaseUnrollMemory 的方法调用的是 releaseStorageMemory 方法，因此这里的分析跳过 
 
 
 ```scala
@@ -466,7 +466,7 @@ def releaseExecutionMemory(
 
 #### ExecutionMemoryPool 的 releaseMemory 方法
 
-对执行内存的释放，虽然略微复杂一点，因为需要针对 task 做处理，但也并未真正释放内存。
+对执行内存的释放，虽然略微复杂一点，因为需要针对 task 做处理，也并未真正释放内存。
 
 ```scala
 /** Release `numBytes` of memory acquired by the given task. */
@@ -510,14 +510,150 @@ spark 1.6 引入了统一内存管理机制，它最大的特点是：存储内�
 
 #### UnifiedMemoryManager 的 acquireStorageMemory 方法
 
+根据内存模式获取当前的执行内存池、存储内存池以及最大内存(堆内或堆外)
+
+```scala
+override def acquireStorageMemory(
+    blockId: BlockId,
+    numBytes: Long,
+    memoryMode: MemoryMode): Boolean = synchronized {
+  assertInvariants()
+  assert(numBytes >= 0)
+  val (executionPool, storagePool, maxMemory) = memoryMode match {
+    case MemoryMode.ON_HEAP => (
+      onHeapExecutionMemoryPool,
+      onHeapStorageMemoryPool,
+      maxOnHeapStorageMemory)
+    case MemoryMode.OFF_HEAP => (
+      offHeapExecutionMemoryPool,
+      offHeapStorageMemoryPool,
+      maxOffHeapStorageMemory)
+  }
+  if (numBytes > maxMemory) {
+    /** Fail fast if the block simply won't fit */
+    logInfo(s"Will not store $blockId as the required space ($numBytes bytes) exceeds our " +
+      s"memory limit ($maxMemory bytes)")
+    return false
+  }
+  /** 当所需要的内存 numBytes 大于存储内存池的空闲内存时，需要考虑从执行内存借内存, 这里的逻辑比较简单  */
+  if (numBytes > storagePool.memoryFree) {
+    /** There is not enough free memory in the storage pool, so try to borrow free memory from */
+    /** the execution pool. */
+    val memoryBorrowedFromExecution = Math.min(executionPool.memoryFree,
+      numBytes - storagePool.memoryFree)
+    executionPool.decrementPoolSize(memoryBorrowedFromExecution)
+    storagePool.incrementPoolSize(memoryBorrowedFromExecution)
+  }
+  storagePool.acquireMemory(blockId, numBytes)
+}
+```
+
 #### UnifiedMemoryManager 的 acquireUnrollMemory 方法
 
+申请 unroll 内存没有什么，申请的内存是存储内存的部分 
+
+```scala
+override def acquireUnrollMemory(
+    blockId: BlockId,
+    numBytes: Long,
+    memoryMode: MemoryMode): Boolean = synchronized {
+  acquireStorageMemory(blockId, numBytes, memoryMode)
+}
+```
+
 #### UnifiedMemoryManager 的 acquireExecutionMemory 方法
+
+```scala
+/** Try to acquire up to `numBytes` of execution memory for the current task and return the */
+/** number of bytes obtained, or 0 if none can be allocated. */
+/**  尝试为当前的 task 申请 numBytes 大小的执行内存, 返回直接申请到的内存的大小，如果没申请到则为 0 */
+/** This call may block until there is enough free memory in some situations, to make sure each */
+/** task has a chance to ramp up to at least 1 / 2N of the total memory pool (where N is the # of */
+/** active tasks) before it is forced to spill. This can happen if the number of tasks increase */
+/** but an older task had a lot of memory already. */
+/** 这个方法在某些情况下会阻塞，直到申请到足够的可用内存，以保证 active task 在被 force to spill 之前， */
+/** 能够获取最少总内存池的 1 / 2N 的内存。这种情况一种发生在一个老的 task 占用了大量内在，但 task 的数量 */
+/** 在增加的时候 */
+override private[memory] def acquireExecutionMemory(
+    numBytes: Long,
+    taskAttemptId: Long,
+    memoryMode: MemoryMode): Long = synchronized {
+  assertInvariants()
+  assert(numBytes >= 0)
+  /** onHeapStorageRegionSize 表示存储区域的大小，但需要注意的是， 这个区域并不是不变的，执行内存可能会 */
+  /** 从存储内存借用。另外，只有当真正的存储内存的使用量超过这个 region 的时候，缓存的 blocks 才会被释放 */
+  val (executionPool, storagePool, storageRegionSize, maxMemory) = memoryMode match {
+    case MemoryMode.ON_HEAP => (
+      onHeapExecutionMemoryPool,
+      onHeapStorageMemoryPool,
+      onHeapStorageRegionSize,
+      maxHeapMemory)
+    case MemoryMode.OFF_HEAP => (
+      offHeapExecutionMemoryPool,
+      offHeapStorageMemoryPool,
+      offHeapStorageMemory,
+      maxOffHeapMemory)
+  }
+
+  /** Grow the execution pool by evicting cached blocks, thereby shrinking the storage pool. */
+  /** 通过释放缓存的 blocks, 收缩存储内存池的大小，实现执行内存池的增长 */
+  /** When acquiring memory for a task, the execution pool may need to make multiple */
+  /** attempts. Each attempt must be able to evict storage in case another task jumps in */
+  /** and caches a large block between the attempts. This is called once per attempt. */
+  /** 当为一个 task 申请内存时，执行内存池可能会进行多次尝试。每次尝试都要能够释放存储，以防 */
+  /** 在多次尝试之间，有另一个 task 插入进来，并缓存一个大的 block。这个方法每次尝试都会调用 */
+  def maybeGrowExecutionPool(extraMemoryNeeded: Long): Unit = {
+    if (extraMemoryNeeded > 0) {
+      /** There is not enough free memory in the execution pool, so try to reclaim memory from */
+      /** storage. We can reclaim any free memory from the storage pool. If the storage pool */
+      /** has grown to become larger than `storageRegionSize`, we can evict blocks and reclaim */
+      /** the memory that storage has borrowed from execution. */
+      /** 如果执行内存没有足够的可用内存，则尝试从存储内存中回收内存。 */
+      /** 要回收的内存最大值，是存储内存可用内存的值，与存储内存占用执行内存的值之间的较大的值 */
+      /** 我们可以从存储内存中回收任意内存。如果存储内存池的内存大小已经大于 storageRegionSize， */
+      /** 我们会回收 blocks, 以及存储内存从执行内存中借用的内存. */
+      val memoryReclaimableFromStorage = math.max(
+        storagePool.memoryFree,
+        storagePool.poolSize - storageRegionSize)
+      if (memoryReclaimableFromStorage > 0) {
+        /** Only reclaim as much space as is necessary and available: */
+        val spaceToReclaim = storagePool.freeSpaceToShrinkPool(
+          math.min(extraMemoryNeeded, memoryReclaimableFromStorage))
+        storagePool.decrementPoolSize(spaceToReclaim)
+        executionPool.incrementPoolSize(spaceToReclaim)
+      }
+    }
+  }
+
+  /** The size the execution pool would have after evicting storage memory. */
+  /**  计算收回存储内存后，执行内存的大小 */
+  /** The execution memory pool divides this quantity among the active tasks evenly to cap */
+  /** the execution memory allocation for each task. It is important to keep this greater */
+  /** than the execution pool size, which doesn't take into account potential memory that */
+  /** could be freed by evicting storage. Otherwise we may hit SPARK-12155. */
+  /** 执行内存池将执行内存的大小平均地分配到活动内存中，以限制每个任务的执行内存分配。*/
+  /** Additionally, this quantity should be kept below `maxMemory` to arbitrate fairness */
+  /** in execution memory allocation across tasks, Otherwise, a task may occupy more than */
+  /** its fair share of execution memory, mistakenly thinking that other tasks can acquire */
+  /** the portion of storage memory that cannot be evicted. */
+  def computeMaxExecutionPoolSize(): Long = {
+    maxMemory - math.min(storagePool.memoryUsed, storageRegionSize)
+  }
+
+  /** 执行内存增加的方法，和计算最大执行内存池大小的方法，都作为参数传到 acquireMemory 方法中 */
+  /** 回顾 ExecutionMemoryPool 的方法 acquireMemory, 这里对统一内存管理的处理就有意义了，而静态内存管理则不使用 */
+  /** 这两个参数就非常重要了 */
+  executionPool.acquireMemory(
+    numBytes, taskAttemptId, maybeGrowExecutionPool, computeMaxExecutionPoolSize)
+}
+```
+
+TODO: 其实关于 spark 存储内存和执行内存的借用关系，这里有点儿抄代码的嫌疑，并没有完全分析清楚，后续再来分析。
 
 #### UnifiedMemoryManager 释放内存
 
 UnifiedMemoryManager 释放内存的逻辑，与 StaticMemoryManager 释放内存是一致的，都在 MemoryManager 中实现，底层是由 StorageMemoryPool 和 ExecutionMemoryPool 实现的。
-因为这里就不再讲了。
+因此这里就不再讲了。
 
 ## 引用
 

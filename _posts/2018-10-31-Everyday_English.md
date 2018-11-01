@@ -1,5 +1,5 @@
 ---
-layout:     English-2018-10-31
+layout:     post
 title:      每日英语学习-Outbreaks in nature
 subtitle:   
 date:       2018-10-31 00:00:00
@@ -7,6 +7,7 @@ author:     mzl
 catalog:    true
 tags:
     - English
+    - China Daily
 ---
 
 {:toc}

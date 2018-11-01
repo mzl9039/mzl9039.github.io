@@ -1,12 +1,13 @@
 ---
-layout:     English-2018-11-1
-title:      每日英语学习-Outbreaks in nature
+layout:     post
+title:      每日英语学习-Cash borrowed in China
 subtitle:   
 date:       2018-11-1 00:00:00
 author:     mzl
 catalog:    true
 tags:
     - English
+    - China Daily
 ---
 
 {:toc}

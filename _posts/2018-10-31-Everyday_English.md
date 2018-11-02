@@ -12,9 +12,9 @@ tags:
 
 {:toc}
 
-skitter: 飞掠
-millennia: 千年
-exponentially：成倍
+* skitter: 飞掠
+* millennia: 千年
+* exponentially：成倍
 
 The line skitters along at a low level for millennia, then rockets up exponentially in the 19th and 20th century.
 这条线(这里指人类发展)数千年来在低水平滑行，然后在19世纪和20世纪以指数方式上升。

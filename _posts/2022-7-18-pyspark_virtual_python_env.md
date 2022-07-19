@@ -17,7 +17,7 @@ tags:
 # 问题列表
 
 * PATH 变量不正确导致 Error: **Java gateway process exited before sending its port number**
-* 公共环境没有需要的 library 报 No Module Named XXX Error
+* 公共环境没有需要的 library 导致 pyspark 报 No Module Named XXX Error
 
 ## 背景介绍
 
@@ -87,8 +87,10 @@ spark = SparkSession \
 修改后的 pyspark 环境变量设置如下:
 
 ```python
-os.environ["SPARK_HOME"] = '/usr/share/spark'  # add this before "import
-# 注意这里的 my_py36 和 mzl_py36: my_py36 为spark 将 python 环境解压前所在的路径名, mzl_py36 为当前 python env 环境包, 即zip包解压后的文件名
+os.environ["SPARK_HOME"] = '/usr/share/spark'
+
+# 注意下面的 my_py36 和 mzl_py36: my_py36 为spark 将 python 环境解压前所在的路径名, mzl_py36 为当前 python env 环境包, 即zip包解压后的文件名
+
 os.environ["PYSPARK_PYTHON"] = "./my_py36/mzl_py36/bin/python"
 os.environ["PYSPARK_DRIVER_PYTHON"] = "/ldap_home/zhiliang.mo/.conda/envs/mzl_py36/bin/python"
 ```

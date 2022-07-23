@@ -140,7 +140,7 @@ $$
 
 ## 2.6 LambdaRank 应用到 RankNet
 
-本节参考自[<sup>5</sum>](#refer-ancher-5), 但内容较为简单, 只有大概明确, 详细内容参考文献2[<sup>2</sum>](#refer-ancher-2)
+本节参考自[<sup>5</sup>](#refer-ancher-5), 但内容较为简单, 只有大概明确, 详细内容参考文献2[<sup>2</sup>](#refer-ancher-2)
 
 给定一对文档, cost 为两者的乘积, 而 RankNet Cost 如下式. 该计算为 pairwise 的, 只基于这对文档的信息. 无论之前排序是否正确, 只要 $s_j - s_i$ 增大(如果 $s_j < s_i$), cost 就会减小.
 $$

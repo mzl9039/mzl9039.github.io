@@ -64,9 +64,9 @@ rank_model.fit(
 
 lgb 中有一些参数未留意到, 具体如何使用及调优未明确: lambdarank_truncation_level, lambdarank_norm, label_gain
 
-1. lambdarank_truncation_level:
-2. lambdarank_norm:
-3. label_gain:
+1. lambdarank_truncation_level: 默认为 20, 计算 DCG 时截断计算, 指 "truncation level", 可参考 LambdaMART paper Sec 3.
+2. lambdarank_norm: 默认为 true, 设为 true 的话, 会 normalize 不同 query 的 lambda 值, 从而提升不均衡数据集的性能
+3. label_gain: 默认$0,1,3,7,15,31,63,\dots,2^{30}-1$, 不同 labels 的相关增益, 该参数的调参是悬学.
 
 # 2.论文阅读
 

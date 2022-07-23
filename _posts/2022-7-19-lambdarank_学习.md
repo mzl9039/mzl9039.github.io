@@ -140,7 +140,7 @@ $$
 
 ## 2.6 LambdaRank 应用到 RankNet
 
-本节参考自[<sup>5</sup>](#refer-ancher-5), 但内容较为简单, 只有大概明确, 详细内容参考文献2[<sup>2</sup>](#refer-ancher-2)
+本节参考自文献5, 但内容较为简单, 只有大概明确, 详细内容参考文献2.
 
 给定一对文档, cost 为两者的乘积, 而 RankNet Cost 如下式. 该计算为 pairwise 的, 只基于这对文档的信息. 无论之前排序是否正确, 只要 $s_j - s_i$ 增大(如果 $s_j < s_i$), cost 就会减小.
 $$
@@ -165,13 +165,8 @@ $$
 
 # 参考文献
 
-<div id="refer-anchor-1"></div>
-- [1] [lambdarank 论文](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/lambdarank.pdf)
-<div id="refer-anchor-2"></div>
-- [2] [LambdaMART 系列论文 overview](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.180.634&rep=rep1&type=pdf)
-<div id="refer-anchor-3"></div>
-- [3] [lightgbm 官网的参数介绍](https://lightgbm.readthedocs.io/en/v3.3.2/Parameters.html)
-<div id="refer-anchor-4"></div>
-- [4] [浅谈Learning to Rank中的RankNet和LambdaRank算法](https://zhuanlan.zhihu.com/p/68682607)
-<div id="refer-anchor-5"></div>
-- [5] [LambdaRank 博客](http://iccm.cc/learning_to_rank_with_nonsmooth_cost_functions/)
+1. [lambdarank 论文](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/lambdarank.pdf)
+2. [LambdaMART 系列论文 overview](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.180.634&rep=rep1&type=pdf)
+3. [lightgbm 官网的参数介绍](https://lightgbm.readthedocs.io/en/v3.3.2/Parameters.html)
+4. [浅谈Learning to Rank中的RankNet和LambdaRank算法](https://zhuanlan.zhihu.com/p/68682607)
+5. [LambdaRank 博客](http://iccm.cc/learning_to_rank_with_nonsmooth_cost_functions/)

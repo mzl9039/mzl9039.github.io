@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      LambdaRank 学习及 lgb 中使用
+title:      LambdaRank 论文阅读及 lgb 中使用
 subtitle:
 date:       2022-07-19 00:00:00
 author:     mzl

@@ -34,7 +34,7 @@ FB 中 EBR 不仅仅依赖 query text, 还要考虑当前的 user 及其上下�
 
 搜索系统如下图所示.
 
-![Search System](https://github.com/mzl9039/mzl9039.github.io/tree/master/styles/img/post-fb-embedding-based-retrieval-system.png)
+![Search System](./styles/img/post-fb-embedding-based-retrieval-system.png)
 
 本文结构: 第2节和第3节介绍 loss function, 模型架构, 训练数据和特征工程; 第4节介绍 model serving 和系统实现; 第5节介绍后续 stage 中优化以充分发挥 embedding 优化的技术; 第6节介绍一些 advanced model techniques; 第7节 conclusion.
 
@@ -78,7 +78,7 @@ $$
 
 输入部分是 Unified Embedding Model 与传统的 text embedding model 最大的不同之处, 如 query 部分输入包括了用户位置, 社交关系; 而 document 部分输入包括了聚合的社交位置, FB groups 社交聚类结果等. Unified Embedding Model 构架如下图所示.
 
-![Unified Embedding Model架构](https://github.com/mzl9039/mzl9039.github.io/tree/master/styles/img/post-fb-unified_embedding_model.png)
+![Unified Embedding Model架构](./styles/img/post-fb-unified_embedding_model.png)
 
 ## 2.4 Training Data Mining
 

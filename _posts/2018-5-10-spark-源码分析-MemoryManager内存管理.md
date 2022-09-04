@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      Spark MemoryManager 内存管理
-subtitle:   
+subtitle:
 date:       2018-05-09 00:00:00
 author:     mzl
 catalog:    true
@@ -188,7 +188,7 @@ def releaseUnrollMemory(numBytes: Long, memoryMode: MemoryMode): Unit
 静态内存管理，是指存储内存、执行内存和其它内存的大小在 spark 应用程序运行期间固定不变，但用户可以在程序启动之前配置，
 
 堆内内存的分配, 如图所示:
-![StaticMemoryManager-onHeap](https://github.com/mzl9039/mzl9039.github.io/raw/master/styles/img/spark-static-memory-mode.png)
+![StaticMemoryManager-onHeap](/styles/img/spark-static-memory-mode.png)
 
 堆内内存的计算方式为：
 
@@ -198,7 +198,7 @@ def releaseUnrollMemory(numBytes: Long, memoryMode: MemoryMode): Unit
 上面公式中的 safetyFraction 是为了留出一块保险区域，降低 OOM 风险。但这块区域仅仅中逻辑上的规划，在具体使用上，spark 把这部分超出 safetyFraction 的内存和其它内存一样对待。
 
 堆外内存的分配比较简单，只有存储内存和执行内存，如图所示：
-![StaticMemoryManager-offHeap](https://github.com/mzl9039/mzl9039.github.io/raw/master/styles/img/spark-off-heap-memory.png)
+![StaticMemoryManager-offHeap](/styles/img/spark-off-heap-memory.png)
 
 静态内存管理由于管理较为简单，无法根据数据规模和计算任务做相应的配置，很容易造成存储内存和执行内存一个使用完了，另一个却还有大量剩余的情况。这就需要新的内存管理机制的出现，即
 (统一内存管理模型)[https://issues.apache.org/jira/secure/attachment/12765646/unified-memory-management-spark-10000.pdf]。但老的静态内存管理机制仍然得以保留，以兼容旧版本的应用程序。
@@ -299,7 +299,7 @@ override def acquireUnrollMemory(
 
 #### StaticMemoryManager 的 acquireExecutionMemory 方法
 
-静态内存管理中，执行内存可以使用堆外内存，并从相应的内存池中获取内存 
+静态内存管理中，执行内存可以使用堆外内存，并从相应的内存池中获取内存
 
 ```scala
 private[memory]
@@ -419,7 +419,7 @@ private[memory] def acquireMemory(
 
 #### MemoryManager 的 releaseStorageMemory 方法
 
-注意：MemoryManager 的 releaseUnrollMemory 的方法调用的是 releaseStorageMemory 方法，因此这里的分析跳过 
+注意：MemoryManager 的 releaseUnrollMemory 的方法调用的是 releaseStorageMemory 方法，因此这里的分析跳过
 
 
 ```scala
@@ -495,7 +495,7 @@ def releaseMemory(numBytes: Long, taskAttemptId: Long): Unit = lock.synchronized
 spark 1.6 引入了统一内存管理机制，它最大的特点是：存储内存与执行内存共享同一块内存空间，可以动态占用对方的空闲区域。
 
 堆内内存的分配，如图所示：
-![UnifiedMemoryManager-onHeap](https://github.com/mzl9039/mzl9039.github.io/raw/master/styles/img/spark-unfied-memory-mode.png)
+![UnifiedMemoryManager-onHeap](/styles/img/spark-unfied-memory-mode.png)
 
 堆外内存分配与静态内存管理机制的默认分配一致，均为存储内存与执行内存默认各占 50%.
 
@@ -550,7 +550,7 @@ override def acquireStorageMemory(
 
 #### UnifiedMemoryManager 的 acquireUnrollMemory 方法
 
-申请 unroll 内存没有什么，申请的内存是存储内存的部分 
+申请 unroll 内存没有什么，申请的内存是存储内存的部分
 
 ```scala
 override def acquireUnrollMemory(

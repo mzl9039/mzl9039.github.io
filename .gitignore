@@ -1,3 +1,4 @@
 # 忽略 vscode 项目目录
 *.vscode
 **/.DS_Store
+todo

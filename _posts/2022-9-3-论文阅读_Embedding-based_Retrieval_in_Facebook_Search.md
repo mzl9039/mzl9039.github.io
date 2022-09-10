@@ -205,3 +205,9 @@ Baseline embedding model 使用的是点击或曝光的正样本，这些是现�
       1. 简单的塔，GC 中 query 塔考虑 Sentence-BERT 等，documents 塔可以考虑增加坐标作用特征输入。
       2. 复杂的塔，不同地址组件均作用塔的输入，如 street, house number, poi, admin, aoi 等
    3. 模型与正负样本的关系，包括多阶段、迁移学习等
+
+# 参考文献
+
+<div id="ref-1"></div>
+
+[1] [Embedding-based Retrieval in Facebook Search](https://dl.acm.org/doi/pdf/10.1145/3394486.3403305)

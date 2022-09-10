@@ -1,7 +1,6 @@
 ---
 layout:     post
-title:      论文阅读-Sampling-Bias-Corrected Neural Modeling for Large Corpus
-Item Recommendations
+title:      论文阅读-Sampling-Bias-Corrected Neural Modeling for Large Corpus Item Recommendations
 subtitle:
 date:       2022-09-05 09:52:00
 author:     mzl

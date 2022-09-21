@@ -224,6 +224,10 @@ header img{
 	width: 175px;
 }
 
+header div{
+	margin: 1.7em;
+}
+
 .cbp_tmlabel .hux_ul{
 	border:none;
 	padding:0;

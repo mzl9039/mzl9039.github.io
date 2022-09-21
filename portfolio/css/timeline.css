@@ -315,6 +315,19 @@ header img{
 	text-decoration: none;
 }
 
+.resume a:link, a:visited {
+  background-color: green;
+  color: white;
+  padding: 15px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.resume a:hover, a:active {
+  background-color: red;
+}
+
 @media screen and (max-width: 400px) {
 	.main{
 		width: 100%;

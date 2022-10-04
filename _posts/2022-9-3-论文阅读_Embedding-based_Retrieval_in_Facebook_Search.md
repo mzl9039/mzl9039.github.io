@@ -144,8 +144,8 @@ retrieval 的数据空间对文本、语义、社交等数据有差异化的数�
 
 **Online Hard Negative Mining**:
 
-由于模型训练是 mini-batch updates, 因此 hard negative 的选择可以在 batch 内完成。如某个 batch 由 n 个正样本对 ${\lbrace (q^{(i)}, d^{(i)}_+) \rbrace}^n_{i=1}$.
-那么对每个 query $q^{(i)}$, 我们使用其它正样本构建 candidate documents pool: ${\lbrace d^{(1)}_+, \dots, d^{(j)}_+, \dots, d^{(n)}_+ | j \ne i \rbrace}$, 并从中选择 similarity score 最高的作为困难负样本构建 train triplets。Online hard negative 始终如一地提高各个领域(如text, context, social 等)的 embedding 质量，并带来 5-8% 的 recall improvement。并且观察到，每个正样本最多使用2个困难负样本，超过2个困难负样本会降低模型质量。但是，由于负样本是随机采样的，这种方式未必能产生 hard enough negative samples, 因此需要 offline hard negative mining.
+由于模型训练是 mini-batch updates, 因此 hard negative 的选择可以在 batch 内完成。如某个 batch 由 n 个正样本对 ${\lbrace (q^i, d^i_+) \rbrace}^n_{i=1}$.
+那么对每个 query $q^{(i)}$, 我们使用其它正样本构建 candidate documents pool: $\lbrace d^1_+, \dots, d^j_+, \dots, d^n_+ | j \ne i \rbrace$, 并从中选择 similarity score 最高的作为困难负样本构建 train triplets。Online hard negative 始终如一地提高各个领域(如text, context, social 等)的 embedding 质量，并带来 5-8% 的 recall improvement。并且观察到，每个正样本最多使用2个困难负样本，超过2个困难负样本会降低模型质量。但是，由于负样本是随机采样的，这种方式未必能产生 hard enough negative samples, 因此需要 offline hard negative mining.
 
 **Offline Hard Negative Mining**：
 

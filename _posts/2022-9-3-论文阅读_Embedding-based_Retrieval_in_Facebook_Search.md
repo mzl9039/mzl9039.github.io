@@ -60,12 +60,12 @@ FB 中的搜索不仅考虑 query text, 更要考虑 searcher 及其 context, �
 
 ## 2.2 Loss function
 
-对于给定的 triplet $( q^{(i)}, d^{(i)}_{+}, d^{(i)}_{-} )$,
-其中 $q^{(i)}$ 为 query, $d_{+}^{(i)}$ 和 $d^{(i)}_{-}$ 是相应的正负样本文档, 则 triplet loss 定义为:
+对于给定的 triplet $( q^i, d^i_+, d^i_- )$,
+其中 $q^i$ 为 query, $d^i_+$ 和 $d^i_-$ 是相应的正负样本文档, 则 triplet loss 定义为:
 
 $$
 \begin{gather}
-    L = \sum^N_{i=1} max(0, D(q^{(i)}, d^{(i)}_+) - D(q^{(i)}, d^{(i)}_-) + m),
+    L = \sum^N_{i=1} max(0, D(q^i, d^i_+) - D(q^i, d^i_-) + m),
 \end{gather}
 $$
 

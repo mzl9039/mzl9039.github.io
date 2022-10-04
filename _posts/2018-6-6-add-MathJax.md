@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      添加 MathJax.js
-subtitle:   
+subtitle:
 date:       2018-06-05 00:00:00
 author:     mzl
 catalog:    true
@@ -59,19 +59,19 @@ $$
 独立公式2：
 
 ```
-$$ 
-    f_\epsilon(p_{i,l}, p_{j,k}) = 
-    \begin{cases} 
+$$
+    f_\epsilon(p_{i,l}, p_{j,k}) =
+    \begin{cases}
     0 & dist(p_{i,l}, p_{j,k}) > \epsilon \\
     1 - \frac {dist(p_{i,l}, p_{j,k})} {\epsilon} & otherwise
     \end{cases}
-$$ 
+$$
 ```
 
-$$ 
-    f_\epsilon(p_{i,l}, p_{j,k}) = 
-    \begin{cases} 
+$$
+    f_\epsilon(p_{i,l}, p_{j,k}) =
+    \begin{cases}
     0 & dist(p_{i,l}, p_{j,k}) > \epsilon \\
     1 - \frac {dist(p_{i,l}, p_{j,k})} {\epsilon} & otherwise
     \end{cases}
-$$ 
+$$
